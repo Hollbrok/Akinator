@@ -1,0 +1,6 @@
+#ifndef AKINATOR_H_INCLUDED
+#define AKINATOR_H_INCLUDED
+
+
+
+#endif // AKINATOR_H_INCLUDED
