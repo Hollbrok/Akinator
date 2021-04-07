@@ -1,0 +1,9 @@
+digraph akinator {
+node [color = Red, fontname = Courier, style = filled, shape=ellipse, fillcolor = purple]
+edge [color=Blue, style=dashed]
+Stasik [label = "Stasik", style = filled, fillcolor = green]
+"КОТ?" -> "Stasik" [label="No", fontcolor=darkblue]
+Poltorashka [label = "Poltorashka", fillcolor = green]
+"КОТ?" -> "Poltorashka" [label="Yes", fontcolor=darkblue]
+"КОТ?" [label = "КОТ?",style = filled, fillcolor = purple] 
+}

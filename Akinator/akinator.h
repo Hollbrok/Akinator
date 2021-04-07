@@ -4,8 +4,8 @@
 #include <TXLib.h>
 #include "akinator_info.h"
 
-using data_type = double;
-#define POISON NAN
+using data_type = char*;
+#define POISON nullptr
 
 class tree_element
 {
@@ -47,6 +47,8 @@ public:
 
  	data_type& non_const_get_data() {assert(this && "You passed nullptr to get_data()"); return data_;};
 
+    data_type& get_data() {assert(this && "You passed nullptr to get_data()"); return data_;};
+
     tree_element* get_left()  {assert(this && "nullptr tree_element in get_next()"); return left_;};
 	tree_element* get_right() {assert(this && "nullptr tree_element in get_next()"); return right_;};
 	tree_element* get_prev()  {assert(this && "nullptr tree_element in get_prev()"); return prev_;};
@@ -86,15 +88,21 @@ public:
 	tree_element* add_to_left(tree_element* x, data_type number);
 
 
+
     void fill_tree(FILE* database);
 
 //! GETTERS
 
-
-
-
+	tree_element* get_root() {return root_;};
 
 // * MAIN GETTERS
+
+	const void print_tree(bool need_graphviz_dump = false)
+									const;
+	const void graphviz_dump(char* dumpfile_name = "dump.dot")
+						 			const;
+
+	//const tree_element* get_root() const {return root_;};
 
 };
 
@@ -102,6 +110,15 @@ public:
 void free_all(tree_element* root);
 void free_right(tree_element* tmp);
 void free_left(tree_element* tmp);
+
+void print_all_elements(tree_element* tmp, FILE* dump, size_t* counter);
+void print_all_edges(tree_element* tmp, FILE* dump, size_t* counter);
+
+void print_left_edge(tree_element* tmp, FILE* dump, size_t* counter);
+void print_right_edge(tree_element* tmp, FILE* dump, size_t* counter);
+
+void print_right_root(tree_element* tmp, FILE* dump,size_t* counter);
+void print_left_root(tree_element* tmp, FILE* dump,size_t* counter);
 
 
 #endif // AKINATOR_H_INCLUDED
