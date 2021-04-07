@@ -1,116 +1,174 @@
 #include "akinator.h"
 
-tree_element::tree_element(data_type data, tree_element* next, tree_element* prev) :
+tree_element::tree_element(data_type data, tree_element* prev, tree_element* left, tree_element* right) :
 	data_(data),
-	next_(next),
-	prev_(prev)
+	prev_(prev),
+	left_(left),
+	right_(right)
 {
-	//printf("in %s\n", __PRETTY_FUNCTION__);
+	printf("in %s\n", __PRETTY_FUNCTION__);
 	assert(this && "You passed nullptr to list_elem construct");
 }
 
 tree_element::~tree_element()
 {
 	assert(this && "You passed nullptr to ~tree_element");
-	//printf("in %s\n", __PRETTY_FUNCTION__);
-	free(next_);
-	next_ = nullptr;
-	free(prev_);
-	prev_ = nullptr;
+    printf("in %s\n", __PRETTY_FUNCTION__);
 	data_ = POISON;
+
+	prev_ = nullptr;
+	left_ = nullptr;
+	right_ = nullptr;
+
 }
 
-tree_element* list::set_element_from_end(data_type number)
+tree::tree(const char* name) :
+	cur_size_(0),
+	error_state_(0),
+	name_(name),
+	root_(nullptr)
 {
-	assert(!isnan(number) && "number is nan");
-	assert(this && "You passed nullptr to set_element_from_end");
+    printf("in %s\n", __PRETTY_FUNCTION__);
+	assert(this && "You passed nullptr to constructor");
+	assert(name && "You need to pass name");
+}
 
-	tree_element* tmp = (tree_element*) calloc (1, sizeof(tree_element));
+tree::~tree()
+{
+    printf("in %s\n", __PRETTY_FUNCTION__);
+	assert(this && "nullptr in desctructor");
 
-	if((start_ == nullptr) && (end_ == nullptr))  // cur_size_ == 0
+
+	if(root_)
+        free_all(root_);
+    else
+        printf("No free\n");
+
+	cur_size_ = -1;
+	error_state_ = -1;
+	name_ = nullptr;
+	root_ = nullptr;
+}
+
+void free_all(tree_element* root)
+{
+    assert(root && "Nullptr root in free_all");
+
+	if(root->get_right())
+        free_right(root->get_right());
+	if(root->get_left())
+        free_left(root->get_left());
+
+	printf("Free root\n");
+
+	free(root);
+	root = nullptr;
+
+	return;
+}
+
+void free_right(tree_element* tmp)
+{
+    assert(tmp && "Nullptr tmp in free_right()");
+	if((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
 	{
-		tmp->set_data(number);
-		tmp->set_next(nullptr);
-		tmp->set_prev(nullptr);
-
-		set_start(tmp);
-		set_end(tmp);
+		printf("Free leaf\n");
+		free(tmp);
+		tmp = nullptr;
+		return;
 	}
 	else
-	{
-		tmp->set_data(number);
-		tmp->set_prev(get_end());
-		tmp->set_next(nullptr);
-
-		(get_end())->set_next(tmp);
-
-		set_end(tmp);
-	}
-
-	cur_size_++;
-
-	return tmp;
+		return free_all(tmp);
 }
 
-tree_element* list::set_element_to_start(data_type number)
+void free_left(tree_element* tmp)
 {
-	assert(!isnan(number) && "number is nan");
-	assert(this && "You passed nullptr to set_element_from_start");
-
-	tree_element* tmp = (tree_element*) calloc (1, sizeof(tree_element));
-
-	if((start_ == nullptr) && (end_ == nullptr))  // cur_size_ == 0
+	if((tmp->get_left() == nullptr) && (tmp->get_right() == nullptr))
 	{
-		tmp->set_data(number);
-		tmp->set_next(nullptr);
-		tmp->set_prev(nullptr);
-
-		set_start(tmp);
-		set_end(tmp);
+		printf("Free leaf\n");
+		free(tmp);
+		tmp = nullptr;
+		return;
 	}
 	else
-	{
-		tmp->set_data(number);
-		tmp->set_prev(nullptr);
-		tmp->set_next(get_start());
-
-		(get_start())->set_prev(tmp);
-
-		set_start(tmp);
-	}
-
-	cur_size_++;
-
-	return tmp;
+		return free_all(tmp);
 }
 
-tree_element* list::set_element_prev_to_x(tree_element* x, data_type number)
+tree_element* tree::add_to_left(tree_element* x, data_type number)
 {
-	assert(this && "You passed nullptr list to set_element_prev_to_x");
-	assert(x && "You passed nullptr x element");
+	//assert(!isnan(number) && "You passed NAN number");
+	//assert(x && "You passed nullptr x yo add_to_left");
+	assert(this && "You passed nullptr tree");
 
+
+    printf("Calloc\n");
 	tree_element* tmp = (tree_element*) calloc(1, sizeof(tree_element));
+	assert(tmp && "Can't calloc memory for tree_element");
 
-	if(is_start(x))
-	{
-		set_start(tmp);
+    if((x == nullptr) && (cur_size_ == 0))
+    {
+        root_ = tmp;
+    	tmp->set_prev(x);
+        tmp->set_right(nullptr);
+        tmp->set_left(nullptr);
+        tmp->set_data(number);
+        cur_size_++;
+    }
+    else if(cur_size_)
+    {
+        tmp->set_prev(x);
+        tmp->set_right(nullptr);
+        tmp->set_left(nullptr);
+        tmp->set_data(number);
+        cur_size_++;
 
-		x->set_prev(tmp);
-		tmp->set_next(x);
-
-		tmp->set_data(number);
+        x->set_left(tmp);
 	}
 	else
-	{
-		(x->get_prev())->set_next(tmp);
-
-		tmp->set_next(x);
-		tmp->set_prev(x->get_prev());
-		tmp->set_data(number);
-	}
-
-	cur_size_++;
+        printf("You must pass x\n");
 
 	return tmp;
+}
+
+tree_element* tree::add_to_right(tree_element* x, data_type number)
+{
+	//assert(!isnan(number) && "You passed NAN number");
+	//assert(x && "You passed nullptr x yo add_to_left");
+	assert(this && "You passed nullptr tree");
+
+
+    printf("Calloc\n");
+	tree_element* tmp = (tree_element*) calloc(1, sizeof(tree_element));
+	assert(tmp && "Can't calloc memory for tree_element");
+
+    if((x == nullptr) && (cur_size_ == 0))
+    {
+        root_ = tmp;
+    	tmp->set_prev(x);
+        tmp->set_right(nullptr);
+        tmp->set_left(nullptr);
+        tmp->set_data(number);
+        cur_size_++;
+    }
+    else if(cur_size_)
+    {
+        tmp->set_prev(x);
+        tmp->set_right(nullptr);
+        tmp->set_left(nullptr);
+        tmp->set_data(number);
+        cur_size_++;
+
+        x->set_right(tmp);
+	}
+	else
+        printf("You must pass x\n");
+
+	return tmp;
+}
+
+void tree::fill_tree(FILE* database) // сделать имя файла, а не file
+{
+    assert(database && "You need to pass database");
+    return;
 }
 

@@ -12,7 +12,7 @@ class tree_element
 private:
 
 	data_type 	  data_ = 0;
-	
+
 	tree_element* prev_ = nullptr;
 
 	tree_element* left_  = nullptr;
@@ -20,16 +20,18 @@ private:
 
 public:
 
-	tree_element(data_type data = 0, tree_element* next = nullptr, tree_element* prev = nullptr);
+    tree_element(data_type data = 0, tree_element* prev = nullptr,
+                tree_element* left = nullptr, tree_element* right = nullptr);
+	//tree_element(data_type data = 0, tree_element* next = nullptr, tree_element* prev = nullptr);
 	~tree_element();
 
 //! SETTERS
 
 	void set_data(data_type new_data) {data_ = new_data;};
-	
+
 	void set_left(tree_element* new_left) {left_ = new_left;};
 	void set_right(tree_element* new_right) {right_ = new_right;};
-	
+
 	void set_prev(tree_element* new_prev) {prev_ = new_prev;};
 
 
@@ -60,14 +62,15 @@ private:
 	size_t error_state_ = 0;
 	const char* name_ 	= nullptr;
 
-	tree_element* root_  = nullptr;	
+	tree_element* root_  = nullptr;
 
 
 //! PRIVATE SETTERS
 
-	//set_root(tree_element* new_root) {assert(new_root && "You passed nullptr new_root"); root_ = new_root;};
-	// i do'nt need this function cause i can just use root_ = something .. 
-	
+    // set_root(tree_element* new_root) {assert(new_root && "You passed nullptr new_root"); root_ = new_root;};
+	// i do'nt need this function cause i can just use root_ = something ..
+
+
 public:
 	tree(const char* name);
 	~tree();
@@ -75,13 +78,15 @@ public:
 //! SETTERS
 
 	//set_root(tree_element* new_root) {assert(new_root && "You passed nullptr new_root"); root_ = new_root;};
-	// Neew to change left and right elements; 
+	// Neew to change left and right elements;
 
 // * MAIN SETTERS
 
-	tree_element add_to_right(tree_element* x, data_type number);
-	tree_element add_to_left(tree_element* x, data_type number);
+	tree_element* add_to_right(tree_element* x, data_type number);
+	tree_element* add_to_left(tree_element* x, data_type number);
 
+
+    void fill_tree(FILE* database);
 
 //! GETTERS
 
@@ -94,6 +99,9 @@ public:
 };
 
 
+void free_all(tree_element* root);
+void free_right(tree_element* tmp);
+void free_left(tree_element* tmp);
 
 
 #endif // AKINATOR_H_INCLUDED

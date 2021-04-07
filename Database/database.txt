@@ -1,0 +1,7 @@
+?Is this poltorashka?
+[
+	`Stasik`
+]
+[
+	`poltorashka`
+]
