@@ -11,11 +11,12 @@ int main()
 
     tree bin_tree("akinator");
 
-    tree_element* root = bin_tree.add_to_left(nullptr, " Œ“?");
+    //tree_element* root = bin_tree.add_to_left(nullptr, " Œ“?");
 
-    bin_tree.add_to_left(root, "Poltorashka");
-    bin_tree.add_to_right(root, "Stasik");
+    //bin_tree.add_to_left(root, "Poltorashka");
+    //bin_tree.add_to_right(root, "Stasik");
 
+    bin_tree.fill_tree("database.txt");
 
     bin_tree.print_tree(true);
 

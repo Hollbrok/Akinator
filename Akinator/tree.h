@@ -5,12 +5,11 @@
 
 using data_type = char*;
 #define POISON nullptr
+const int MAX_QUESTION_SIZE = 30;
 
 class tree_element
 {
 private:
-
-	data_type 	  data_ = 0;
 
 	tree_element* prev_ = nullptr;
 
@@ -18,6 +17,8 @@ private:
 	tree_element* right_ = nullptr;
 
 public:
+
+    data_type 	  data_ = 0;
 
     tree_element(data_type data = 0, tree_element* prev = nullptr,
                 tree_element* left = nullptr, tree_element* right = nullptr);
@@ -87,9 +88,6 @@ public:
 	tree_element* add_to_left(tree_element* x, data_type number);
 
 
-
-    void fill_tree(FILE* database);
-
 //! GETTERS
 
 	tree_element* get_root() {return root_;};
@@ -100,6 +98,12 @@ public:
 									const;
 	const void graphviz_dump(char* dumpfile_name = "dump.dot")
 						 			const;
+    const void fill_tree(char* name_file = "database.txt");
+
+    tree_element* fill_root(char* buffer);
+    tree_element* fill_root(char** buffer);
+
+
 
 	//const tree_element* get_root() const {return root_;};
 
@@ -107,6 +111,9 @@ public:
 
 void free_all(tree_element* root);
 void print_all_elements(tree_element* tmp, FILE* dump);
+long size_of_file(FILE *user_code);
+char* make_buffer(char* name_file);
+//tree_element* fill_root(tree_element* root, char* buffer);
 
 
 #endif // TREE_H_INCLUDED

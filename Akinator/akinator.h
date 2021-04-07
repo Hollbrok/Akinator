@@ -10,6 +10,9 @@ void free_all(tree_element* root);
 
 void print_all_elements(tree_element* tmp, FILE* dump);
 
+long size_of_file(FILE *user_code);
+
+char* make_buffer(char* name_file);
 
 
 #endif // AKINATOR_H_INCLUDED
