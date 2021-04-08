@@ -53,6 +53,12 @@ public:
 	tree_element* get_right() {assert(this && "nullptr tree_element in get_next()"); return right_;};
 	tree_element* get_prev()  {assert(this && "nullptr tree_element in get_prev()"); return prev_;};
 
+    void build_prev_connections(tree_element* root);
+
+    void print_elem(tree_element* root, FILE* database);
+
+
+    bool get_user_answer();
 
 };
 
@@ -97,12 +103,17 @@ public:
 	const void print_tree(bool need_graphviz_dump = false)
 									const;
 	const void graphviz_dump(char* dumpfile_name = "dump.dot")
+
 						 			const;
     const void fill_tree(char* name_file = "database.txt");
 
+    const void play_1();
+    const void play();
+
+    const void update_database(char* name_file = "database.txt");
+
     tree_element* fill_root(char* buffer);
     tree_element* fill_root(char** buffer);
-
 
 
 	//const tree_element* get_root() const {return root_;};
@@ -114,6 +125,12 @@ void print_all_elements(tree_element* tmp, FILE* dump);
 long size_of_file(FILE *user_code);
 char* make_buffer(char* name_file);
 //tree_element* fill_root(tree_element* root, char* buffer);
+
+
+int get_number_of_game();
+void print_hello();
+const void check_answer(tree_element* question);
+char* get_data_from_user();
 
 
 #endif // TREE_H_INCLUDED

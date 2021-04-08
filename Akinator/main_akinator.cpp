@@ -16,9 +16,9 @@ int main()
     //bin_tree.add_to_left(root, "Poltorashka");
     //bin_tree.add_to_right(root, "Stasik");
 
-    bin_tree.fill_tree("database.txt");
+    bin_tree.play();
 
-    bin_tree.print_tree(true);
+    //bin_tree.print_tree(true);
 
     return 0;
 }

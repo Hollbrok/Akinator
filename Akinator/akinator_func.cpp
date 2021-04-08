@@ -8,12 +8,12 @@ void print_all_elements(tree_element* tmp, FILE* dump)
 	if(tmp->get_right())
 	{
 		print_all_elements(tmp->get_right(), dump);
-		fprintf(dump, "\"%s\" -> \"%s\" [label=\"Нет\", fontcolor=darkblue]\n", tmp->non_const_get_data(), (tmp->get_right())->non_const_get_data());
+		fprintf(dump, "\"%s\" -> \"%s\" [label=\"Да\", fontcolor=darkblue]\n", tmp->non_const_get_data(), (tmp->get_right())->non_const_get_data());
 	}
 	if (tmp->get_left())
 	{
 		print_all_elements(tmp->get_left(), dump);
-        fprintf(dump, "\"%s\" -> \"%s\" [label=\"Да\", fontcolor=darkblue]\n", tmp->non_const_get_data(), (tmp->get_left())->non_const_get_data());
+        fprintf(dump, "\"%s\" -> \"%s\" [label=\"Нет\", fontcolor=darkblue]\n", tmp->non_const_get_data(), (tmp->get_left())->non_const_get_data());
 	}
 
     if((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
@@ -32,11 +32,11 @@ void free_all(tree_element* root)
         free_all(root->get_right());
 
 
-    printf("Free data\n");
+    //printf("Free data\n");
     free(root->non_const_get_data());
     root->non_const_get_data() = nullptr;
 
-	printf("Free root\n");
+	//printf("Free root\n");
 	free(root);
 	root = nullptr;
 
