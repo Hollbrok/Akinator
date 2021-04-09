@@ -3,6 +3,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <SFML/Graphics.hpp>
 #include <stdio.h>
 #include <cstdio>
 #include <windows.h>

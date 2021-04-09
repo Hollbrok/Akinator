@@ -3,6 +3,7 @@
 
 #include "tree.h"
 
+void graphic_play();
 
 
 
