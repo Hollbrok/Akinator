@@ -1,9 +1,5 @@
 #include "akinator.h"
 
-// Класс вынести в отдельнй .cpp/.h
-
-// fill_tree(FILE* base);
-
 int main()
 {
     SetConsoleCP(1251);
@@ -11,14 +7,10 @@ int main()
 
     tree bin_tree("akinator");
 
-    //tree_element* root = bin_tree.add_to_left(nullptr, "КОТ?");
-
-    //bin_tree.add_to_left(root, "Poltorashka");
-    //bin_tree.add_to_right(root, "Stasik");
-
     bin_tree.play();
 
-    //bin_tree.print_tree(true);
-
+    system("PAUSE");
+    
     return 0;
 }
+

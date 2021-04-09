@@ -1,11 +1,53 @@
 #ifndef TREE_H_INCLUDED
 #define TREE_H_INCLUDED
 
-#include <TXLib.h>
+#include "akinator_config.h"
+
+#define POISON nullptr
 
 using data_type = char*;
-#define POISON nullptr
 const int MAX_QUESTION_SIZE = 30;
+
+
+/* Debug memory allocation support */
+#ifndef NDEBUG 
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h> 
+
+#define SetDbgMemHooks()                                           \
+  _CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF | \
+  _CRTDBG_ALLOC_MEM_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))      
+
+static class __Dummy
+{
+public:
+	/* Class constructor */
+	__Dummy(VOID)
+	{
+		SetDbgMemHooks();
+	} /* End of '__Dummy' constructor */
+} __ooppss;
+#endif /* _DEBUG */ 
+
+#ifndef NDEBUG
+#  ifdef _CRTDBG_MAP_ALLOC 
+#    define new new(_NORMAL_BLOCK, __FILE__, __LINE__) 
+#  endif /* _CRTDBG_MAP_ALLOC */ 
+#endif /* _DEBUG */
+
+
+#define NDEBUG
+#ifndef NDEBUG
+#define VERIFICATION                                                           \
+{                                                                              \
+  if (verification()) {                                                        \
+    fprintf(stderr, "LINE: %d\nFILE:%s\nFUNC:%s"__LINE__, __FILE__, __func__); \
+    assert(0);                                                                 \
+  }                                                                            \
+}                                                                               
+#else
+#define VERIFICATION ;
+#endif /* _DEBUG */
 
 class tree_element
 {
@@ -19,16 +61,21 @@ private:
 public:
 
     data_type 	  data_ = 0;
+	size_t		length_ = 0;
+
+	data_type user_data_ = 0;
+	size_t	user_length_ = 0;
 
     tree_element(data_type data = 0, tree_element* prev = nullptr,
                 tree_element* left = nullptr, tree_element* right = nullptr);
-	//tree_element(data_type data = 0, tree_element* next = nullptr, tree_element* prev = nullptr);
+	
 	~tree_element();
 
 //! SETTERS
 
 	void set_data(data_type new_data) {data_ = new_data;};
-
+	void set_user_data(data_type new_data) { user_data_ = new_data; };
+	
 	void set_left(tree_element* new_left) {left_ = new_left;};
 	void set_right(tree_element* new_right) {right_ = new_right;};
 
@@ -45,7 +92,7 @@ public:
 
 //! NON_CONST GETTERS
 
- 	data_type& non_const_get_data() {assert(this && "You passed nullptr to get_data()"); return data_;};
+ 	data_type non_const_get_data() {assert(this && "You passed nullptr to get_data()"); return data_;};
 
     data_type& get_data() {assert(this && "You passed nullptr to get_data()"); return data_;};
 
@@ -55,8 +102,9 @@ public:
 
     void build_prev_connections(tree_element* root);
 
-    void print_elem(tree_element* root, FILE* database);
+    void print_elem(FILE* database);
 
+	void free_all();
 
     bool get_user_answer();
 
@@ -71,6 +119,8 @@ private:
 	const char* name_ 	= nullptr;
 
 	tree_element* root_  = nullptr;
+
+	char* buffer_ = nullptr;
 
 
 //! PRIVATE SETTERS
@@ -100,37 +150,45 @@ public:
 
 // * MAIN GETTERS
 
-	const void print_tree(bool need_graphviz_dump = false)
+	void print_tree(bool need_graphviz_dump = false)
 									const;
-	const void graphviz_dump(char* dumpfile_name = "dump.dot")
-
+	void graphviz_dump(const char* dumpfile_name = "dump.dot")
 						 			const;
-    const void fill_tree(char* name_file = "database.txt");
+	void graphviz_beauty_dump(const char* dumpfile_name)
+									const;
 
-    const void play_1();
-    const void play();
+    void fill_tree(const char* name_file);
 
-    const void update_database(char* name_file = "database.txt");
+    void play_1();
+	void play_2();
+    void play();
 
-    tree_element* fill_root(char* buffer);
-    tree_element* fill_root(char** buffer);
+    void update_database(const char* name_file);
+
+	void show_tree() const;
+
+	tree_element* fill_root();
+    //tree_element* fill_root(char* buffer);
+    //tree_element* fill_root(char** buffer);
 
 
 	//const tree_element* get_root() const {return root_;};
 
 };
 
-void free_all(tree_element* root);
-void print_all_elements(tree_element* tmp, FILE* dump);
-long size_of_file(FILE *user_code);
-char* make_buffer(char* name_file);
-//tree_element* fill_root(tree_element* root, char* buffer);
 
+
+void print_all_elements(tree_element* tmp, FILE* dump);
+void print_all_elements_beauty(tree_element* tmp, FILE* dump);
+void print_hello();
+void check_answer(tree_element* question);
+
+long size_of_file(FILE *user_code);
+char* make_buffer(const char* name_file);
 
 int get_number_of_game();
-void print_hello();
-const void check_answer(tree_element* question);
 char* get_data_from_user();
 
+void free_all(tree_element* root);
 
 #endif // TREE_H_INCLUDED

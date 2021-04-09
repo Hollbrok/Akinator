@@ -1,24 +1,30 @@
 #include "tree.h"
 
+
+
 tree_element::tree_element(data_type data, tree_element* prev, tree_element* left, tree_element* right) :
 	data_(data),
 	prev_(prev),
 	left_(left),
 	right_(right)
 {
-	//printf("in %s\n", __PRETTY_FUNCTION__);
 	assert(this && "You passed nullptr to list_elem construct");
 }
 
 tree_element::~tree_element()
 {
 	assert(this && "You passed nullptr to ~tree_element");
-    //printf("in %s\n", __PRETTY_FUNCTION__);
 	data_ = POISON;
 
 	prev_ = nullptr;
 	left_ = nullptr;
 	right_ = nullptr;
+
+    if (user_data_)
+    {
+        delete[] user_data_;
+        user_data_ = nullptr;
+    }
 
 }
 
@@ -26,23 +32,30 @@ tree::tree(const char* name) :
 	cur_size_(0),
 	error_state_(0),
 	name_(name),
-	root_(nullptr)
+	root_(nullptr),
+    buffer_(nullptr)
 {
-    //printf("in %s\n", __PRETTY_FUNCTION__);
 	assert(this && "You passed nullptr to constructor");
 	assert(name && "You need to pass name");
 }
 
 tree::~tree()
 {
-    //printf("in %s\n", __PRETTY_FUNCTION__);
 	assert(this && "nullptr in desctructor");
 
-
-	if(root_)
-        free_all(root_);
+    if (root_)
+        root_->free_all();
     else
         printf("No free\n");
+
+    if (buffer_)
+    {
+        delete[] buffer_;
+        buffer_ = nullptr;
+    }
+    else
+        printf("No buffer\n");
+
 
 	cur_size_ = -1;
 	error_state_ = -1;
@@ -50,24 +63,42 @@ tree::~tree()
 	root_ = nullptr;
 }
 
+void tree_element::free_all()
+{
+
+    if (left_)
+        left_->free_all();
+    if (right_)
+        right_->free_all();
+
+    if (user_length_)
+        delete[] user_data_;
+  
+    if (this)
+        free(this);
+    else
+        printf("root is nullptr");
+
+    return;
+}
+
+
 tree_element* tree::add_to_left(tree_element* x, data_type number)
 {
-	//assert(!isnan(number) && "You passed NAN number");
-	//assert(x && "You passed nullptr x yo add_to_left");
 	assert(this && "You passed nullptr tree");
 
-
-    printf("Calloc\n");
-	tree_element* tmp = (tree_element*) calloc(1, sizeof(tree_element));
+    tree_element* tmp = new tree_element;
 	assert(tmp && "Can't calloc memory for tree_element");
 
     if((x == nullptr) && (cur_size_ == 0))
     {
         root_ = tmp;
+
     	tmp->set_prev(x);
         tmp->set_right(nullptr);
         tmp->set_left(nullptr);
         tmp->set_data(number);
+
         cur_size_++;
     }
     else if(cur_size_ && tmp)
@@ -76,6 +107,7 @@ tree_element* tree::add_to_left(tree_element* x, data_type number)
         tmp->set_right(nullptr);
         tmp->set_left(nullptr);
         tmp->set_data(number);
+
         cur_size_++;
 
         x->set_left(tmp);
@@ -88,23 +120,20 @@ tree_element* tree::add_to_left(tree_element* x, data_type number)
 
 tree_element* tree::add_to_right(tree_element* x, data_type number)
 {
-	//assert(!isnan(number) && "You passed NAN number");
-	//assert(x && "You passed nullptr x yo add_to_left");
 	assert(this && "You passed nullptr tree");
 
-
-    //printf("Calloc\n");
-	tree_element* tmp = (tree_element*) calloc(1, sizeof(tree_element));
+    tree_element* tmp = new tree_element;
 	assert(tmp && "Can't calloc memory for tree_element");
 
     if((x == nullptr) && (cur_size_ == 0))
     {
         root_ = tmp;
+
     	tmp->set_prev(x);
         tmp->set_right(nullptr);
         tmp->set_left(nullptr);
-        //printf("set data [%s]\n", number);
         tmp->set_data(number);
+       
         cur_size_++;
     }
     else if(cur_size_)
@@ -113,9 +142,10 @@ tree_element* tree::add_to_right(tree_element* x, data_type number)
         tmp->set_right(nullptr);
         tmp->set_left(nullptr);
         tmp->set_data(number);
-        cur_size_++;
 
         x->set_right(tmp);
+
+        cur_size_++;
 	}
 	else
         printf("You must pass x\n");
@@ -124,7 +154,7 @@ tree_element* tree::add_to_right(tree_element* x, data_type number)
 }
 
 
-const void tree::print_tree(bool need_graphviz_dump) const
+void tree::print_tree(bool need_graphviz_dump) const
 {
 	if(need_graphviz_dump)
 	{
@@ -136,16 +166,13 @@ const void tree::print_tree(bool need_graphviz_dump) const
         system("ren dump_temp.dot dump.dot");
 
         system("dump.pdf");
-
-    // or   system("dot dump.dot -Tpng -o dump_list.png"); // if u want [.png] format
 	}
 
-	size_t counter = 0;
 
 	return;
 }
 
-const void tree::graphviz_dump(char* dumpfile_name) const
+void tree::graphviz_dump(const char* dumpfile_name) const
 {
     assert(dumpfile_name && "You passed nullptr dumpfile_name");
 
@@ -153,10 +180,9 @@ const void tree::graphviz_dump(char* dumpfile_name) const
     assert(dump && "Can't open dump.dot");
 
     fprintf(dump, "digraph %s {\n", name_);
-    fprintf(dump, "node [color = Red, fontname = Courier, style = filled, shape=ellipse, fillcolor = purple]\n");
-    fprintf(dump, "edge [color=Blue, style=dashed]\n");
+    fprintf(dump, "node [color = Red, fontname = Courier, style = filled, shape=record, fillcolor = purple]\n");
+    fprintf(dump, "edge [color = Blue, style=dashed]\n");
 
-    //size_t counter = 1;
     tree_element* tmp = root_;
 
 	print_all_elements(tmp, dump);
@@ -166,29 +192,63 @@ const void tree::graphviz_dump(char* dumpfile_name) const
     return;
 }
 
-const void tree::fill_tree(char* name_file)
+void tree::show_tree() const
+{
+    graphviz_beauty_dump("beauty_tree.dot");
+
+    system("iconv.exe -t UTF-8 -f  CP1251 < beauty_tree.dot > beauty_tree_temp.dot");
+    system("dot beauty_tree_temp.dot -Tpdf -o beauty_dump.pdf");
+    system("del beauty_tree.dot");
+    system("ren beauty_tree_temp.dot beauty_tree.dot");
+
+    system("beauty_dump.pdf");
+}
+
+void tree::graphviz_beauty_dump(const char* dumpfile_name) const
+{
+    assert(dumpfile_name && "You passed nullptr dumpfile_name");
+
+    FILE* dump = fopen(dumpfile_name, "wb");
+    assert(dump && "Can't open dump.dot");
+
+    fprintf(dump, "digraph %s {\n", name_);
+    fprintf(dump, "node [color = Red, fontname = Courier, style = filled, shape=ellipse, fillcolor = purple]\n");
+    fprintf(dump, "edge [color = Blue, style=dashed]\n");
+
+    tree_element* root = root_;
+
+    print_all_elements_beauty(root, dump);
+    fprintf(dump, "}\n");
+
+    fclose(dump);
+    return;
+}
+
+
+void tree::fill_tree(const char* name_file)
 {
 	assert(this && "you passed nullptr to fill_tree");
 	assert(name_file && "U need to pas FILE* database");
+    printf("name of file = [%s]\n", name_file);
+	buffer_ = make_buffer(name_file);
+    char* copy_of_buffer = buffer_;
+    if (strlen(buffer_) < 10)
+    {
+        printf("Buffer is empty\n");
+        return;
+    }
 
-	char* buffer = make_buffer(name_file);
-    char* copy_of_buffer = buffer;
+    while (*buffer_ != '[');
+        buffer_++;
 
-	//printf("%s\n", buffer);
+    root_ = fill_root();
 
-    while (*buffer != '[');
-        buffer++;
+    if (root_)
+        build_prev_connections(root_);
+    else printf("ROOT IS NULLPTR\n");
 
-    root_ = fill_root(buffer);
+    buffer_ = copy_of_buffer;
 
-    tree_element* root = root_;
-    build_prev_connections(root);
-
-
-
-    //printf("root = %d\n", root_);
-
-    free(copy_of_buffer);
 	return;
 }
 
@@ -196,12 +256,6 @@ void tree_element::build_prev_connections(tree_element* root)
 {
     assert(root);
 
-    /*if((root->get_right() == nullptr) || (root->get_left() == nullptr))
-        return root;
-    if(root->get_right() == nullptr)
-        root->set_right(build_prev_connection(root->get_right));
-    if(root->get_left() == nullptr)
-        root->set_left*/
     if(root->get_right())
     {
         if( ((root->get_right())->get_left() == nullptr) && ((root->get_right())->get_right() == nullptr) )
@@ -225,196 +279,124 @@ void tree_element::build_prev_connections(tree_element* root)
 }
 
 
-tree_element* tree::fill_root(char* buffer)
+tree_element* tree::fill_root()
 {
-    //printf("buffer in fill_root:\n%s\n", buffer);
-    //printf("in fill_root\n");
-    while(isspace(*buffer))
-        buffer++;
+    while(isspace(*buffer_))
+        buffer_++;
 
-    if (*buffer == '[')
-        buffer++;
+    if (*buffer_ == '[')
+        buffer_++;
 
-    while(isspace(*buffer))
-        buffer++;
+    while(isspace(*buffer_))
+        buffer_++;
 
-    tree_element* tmp_element = (tree_element*) calloc(1, sizeof(tree_element));
+    tree_element* tmp_element = new tree_element;
     assert(tmp_element && "Can't calloc mempry for tmp");
 
-    if((*buffer == '`') || (*buffer == '?'))
+    if((*buffer_ == '`') || (*buffer_ == '?'))
     {
-        buffer++;
+        buffer_++;
 
         int lenght = 0;
-        while((*buffer != '?') && (*buffer != '`'))
+        while((*buffer_ != '?') && (*buffer_ != '`'))
         {
             lenght++;
-            buffer++;
+            buffer_++;
         }
 
-        buffer = buffer - lenght;
-        tmp_element->data_ = (char*) calloc(lenght, sizeof(char));
+        
+        buffer_ -= lenght;
+        
+        tmp_element->data_ = buffer_;
+        tmp_element->length_ = lenght;
 
-        strncpy(tmp_element->data_, buffer, lenght);
+        buffer_ += lenght;
 
-        buffer = buffer + lenght;
+        tmp_element->set_left(nullptr);
+        tmp_element->set_right(nullptr);
+        tmp_element->set_prev(nullptr);
 
-        tmp_element->set_left(nullptr);//left_ = nullptr;
-        tmp_element->set_right(nullptr);//right_ = nullptr;
-        tmp_element->set_prev(nullptr);//prev_ = nullptr;
+        while(isspace(*buffer_))
+            buffer_++;
 
-        while(isspace(*buffer))
-            buffer++;
-
-        //printf("buffer = *%s*\n", buffer);
-
-        if(*buffer == '?')    // if first if was called by '?'
+        if(*buffer_ == '?') 
         {
-            //printf("find ?\n");
-            buffer++;
-            //printf("BUFFERBUFFER = %c", *buffer);
-            tmp_element->set_left(fill_root(&buffer));//left_ = fill_root(char* buffer)
-            //printf("BUFFERBUFFER = %c\n", *buffer);
-            tmp_element->set_right(fill_root(&buffer));//right_ = fill_root(char* buffer)
+
+            buffer_++;
+
+            tmp_element->set_left(fill_root());
+            tmp_element->set_right(fill_root());
         }
-        //free(tmp_element);
     }
-    buffer++;
-    while(isspace(*buffer))
-        buffer++;
-    //printf("buffer after:\n%s\n", buffer);
-    if (*buffer == ']')
+    buffer_++;
+
+    while(isspace(*buffer_))
+        buffer_++;
+  
+    if (*buffer_ == ']')
     {
-        buffer++;
-        //printf("return\n");
+        buffer_++;
         return tmp_element;
     }
     else
+    {
         printf("Something bad..\n");
+        return nullptr;
+    }
 }
 
-tree_element* tree::fill_root(char** buffer)
+char* make_buffer(const char* name_file)
 {
-    //assert(root && "root is nullptr");
-    //rintf("buffer in fill_root:\n%s\n", buffer);
-    //printf("in fill_root\n");
-    while(isspace(**buffer))
-        (*buffer)++;
-
-    if (**buffer == '[')
-       (*buffer)++;
-
-    while(isspace(**buffer))
-        (*buffer)++;
-
-    //printf("buffer 10 strings after:\n%s\n", buffer);
-    //printf("in fill_root\n");
-
-    tree_element* tmp_element = (tree_element*) calloc(1, sizeof(tree_element));
-    assert(tmp_element && "Can't calloc mempry for tmp");
-
-    if((**buffer == '`') || (**buffer == '?'))
-    {
-
-        //printf("Find ' or ?\n");
-        (*buffer)++;
-        //printf("buffer after ? or ':\n*%s*\n", buffer);
-        //printf("in fill_root\n");
-        //char* tmp_data = (char*) calloc(MAX_QUESTION_SIZE, sizeof(char));
-        //assert(tmp_data && "Can't calloc memory for tmp_data");
-
-        int lenght = 0;
-        while((**buffer != '?') && (**buffer != '`'))
-        {
-            //printf("lenght++\n");
-            lenght++;
-            (*buffer)++;
-        }
-        // BUFFER - lenght
-        *buffer = (*buffer) - lenght;
-        tmp_element->data_ = (char*) calloc(lenght, sizeof(char));
-
-        strncpy(tmp_element->data_, *buffer, lenght); // in tmp_data 'INFORMATION'
-
-        *buffer = (*buffer) + lenght;
-        //printf("after strncpy\n");
-        //printf("tmp_element->data_ = [%s]\n", tmp_element->data_);
-        //tmp_element->set_data(tmp_data);// = tmp_data;
-
-
-        tmp_element->set_left(nullptr);//left_ = nullptr;
-        tmp_element->set_right(nullptr);//right_ = nullptr;
-        tmp_element->set_prev(nullptr);//prev_ = nullptr;
-
-        while(isspace(**buffer))
-            (*buffer)++;
-
-        //printf("buffer = *%s*\n", *buffer);
-
-        if(**buffer == '?')
-        {
-            //printf("find ?\n");
-            (*buffer)++;
-            //printf("BUFFERBUFFER = %c", **buffer);
-            tmp_element->set_left(fill_root(buffer));//left_ = fill_root(char* buffer)
-            //printf("BUFFERBUFFER = %c\n", **buffer);
-            tmp_element->set_right(fill_root(buffer));//right_ = fill_root(char* buffer)
-        }
-        //free(tmp_element);
-    }
-    (*buffer)++;
-    while(isspace(**buffer))
-        (*buffer)++;
-    //printf("buffer after:\n%s\n", buffer);
-    if (**buffer == ']')
-    {
-        (*buffer)++;
-        //printf("return\n");
-        return tmp_element;
-    }
-    else
-        printf("Something bad..\n");
-}
-
-char* make_buffer(char* name_file)
-{
-    FILE* database = fopen(name_file, "rb");
+    FILE* database = fopen("database.txt", "rb");
 	assert(database && "Can't open database.txt");
 
     long file_length = size_of_file(database);
 
-	char* buffer = (char*) calloc(file_length, sizeof(char));
+    char* buffer = new char[file_length];
 	assert(buffer && "Can't calloc memory for buffer");
 
 	fread  (buffer, sizeof(char), file_length, database);
 	return buffer;
 }
 
-const void tree::play()
+void tree::play()
 {
     assert(this && "You passed nullptr yo play()");
 
     print_hello();
-    fill_tree();
 
-    switch(get_number_of_game())
+    const char* name_of_file = "database.txt";
+    fill_tree(name_of_file);
+
+    while (true)
     {
-        case 1:
-            //printf("Вы выбрали режим 1\n");
-            play_1();
-            break;
-        case 2:
-            break;
-        case 3:
-            break;
+        int number_of_game = get_number_of_game();
 
-        default:
-            printf("Not indentified number of regime\n");
+        if (number_of_game == 5)
             break;
+        else
+            switch (number_of_game)
+            {
+            case 1:
+                play_1();
+                break;
+            case 2:
+                play_2();
+                break;
+            case 3:
+                break;
+
+            default:
+                printf("Not indentified number of regime\n");
+                break;
+            }
     }
 
-    print_tree(true);
-    update_database();
+    printf("Updating data base..\n");
+    
+    const char* name_of_new_base = "database.txt";
+    update_database(name_of_new_base);
+    printf("Done!\n");
 
     return;
 }
@@ -426,35 +408,26 @@ int get_number_of_game()
 
     char user_data[256] = {};
 
-    //printf("Введите цифру режима игры: ");
-
     while(true)
     {
         printf("Введите цифру режима игры: ");
-        gets(user_data);
+        gets_s(user_data);
         user_data[strlen(user_data)] = '\0';
 
-        if(!isdigit(user_data[0]))
-        {
-            //printf("Пожалуйста, введите именно цифру: ");
+        if (!isdigit(user_data[0]))
             continue;
-        }
 
-        if(strlen(user_data) != 1)
+        if (strlen(user_data) != 1)
         {
             fflush(stdin);
-            //printf("Введите цифру (длина 1): ");
             continue;
         }
 
         number_of_game = atoi(user_data);
 
-        if(!(0 < number_of_game) || !(number_of_game < 2))
-        {
-            //printf("Режим номер %d не существует, выберите другой: ", number_of_game);
-            //gets(user_data);
+        if(!(0 < number_of_game) || !(number_of_game < 6))
             continue;
-        }
+
         break;
     }
     printf("\n\n");
@@ -466,18 +439,17 @@ void print_hello()
     printf("\t\tПриветствую тебя.\nЧтобы сыграть можешь выбрать один в следующих режимов игры:\n");
 
     printf("\t1. Угадать загаданный предмет/героя\n");
+    printf("\t2. Показать базу\n");
 
 
+    printf("\t5. Выйти\n");
     printf("\n");
     return;
 }
 
-const void tree::play_1()
+void tree::play_1()
 {
     assert(this && "You passed nullptr tree to play_1");
-
-    //tree_element* root = root_;
-    //printf("root = %d\n", root_);
 
     if(root_)
     {
@@ -494,7 +466,14 @@ const void tree::play_1()
     return;
 }
 
-const void check_answer(tree_element* question)
+void tree::play_2()
+{
+    show_tree();
+    return;
+}
+
+
+void check_answer(tree_element* question)
 {
     assert(question && "nullptr question in check_answer");
 
@@ -508,25 +487,34 @@ const void check_answer(tree_element* question)
         else
         {
             printf("\t\tЖаль, что не удалось, но я\n\t\tпопробую угадать в следующий раз!\n");
-
             printf("\t\tМожешь ввести имя загаданного предмета?\n:");
 
-            tree_element* user_element = (tree_element*) calloc(1, sizeof(tree_element));
+            
+            tree_element* user_element = new tree_element;
             assert(user_element);
-            user_element->set_data(get_data_from_user());
-            printf("Ваш предмет [%s]\n", user_element->non_const_get_data());
+            
+            user_element->data_ = get_data_from_user();
+            user_element->user_length_ = strlen(user_element->data_);
+            user_element->length_ = user_element->user_length_;
+
+            printf("Ваш предмет [%.*s]\n", user_element->length_, user_element->data_);
 
      // USER WORD   -- TRUE   -- RIGHT RIGHT
 
             printf("\t\tА теперь какое-нибудь его свойство, которого нет в моем слове\n:");
-
-            tree_element* user_attribute = (tree_element*) calloc(1, sizeof(tree_element));
+  
+            tree_element* user_attribute = new tree_element; 
             assert(user_attribute);
-            user_attribute->set_data(get_data_from_user());
-            printf("Ваш вопрос [%s]\n", user_attribute->non_const_get_data());
+
+            user_attribute->data_ = get_data_from_user();
+            user_attribute->user_length_ = strlen(user_attribute->data_);
+            user_attribute->length_ = user_attribute->user_length_;
+
+            printf("Ваш вопрос [%.*s]\n", user_attribute->length_, user_attribute->data_);
 
 
             user_element->set_prev(user_attribute);
+
      //ATTRIBUTE OF USER WORD
 
             user_attribute->set_right(user_element);
@@ -541,45 +529,32 @@ const void check_answer(tree_element* question)
 
             user_attribute->set_prev(question->get_prev());
             question->set_prev(user_attribute);
-
-
-
-
-            //get_data_from_user()
         }
-
-        // bool
-        //verify_user_answer();
     }
     else if(question->get_user_answer())
-    {
-        //printf("Ваш ответ да\n");
         check_answer(question->get_right());
-    }
-    else
-    {   // user answered no
-        //printf("Ваш ответ нет\n");
+    else 
         check_answer(question->get_left());
-    }
+
     return;
 }
 
 bool tree_element::get_user_answer()
 {
-//printf("Мне нужно знать\n");
-    printf("\t\t%s?\n", non_const_get_data());
+    printf("\t\t%.*s?\n", length_, data_);
     char user_data[256] = {};
 
     while(true)
     {
-        //printf("Обладает ли этот предмет этим свойством?: ");
-        gets(user_data);
+        gets_s(user_data);
+
         if(strlen(user_data) != 1)
         {
             printf("Нет такого варианта ответа\n");
             fflush(stdin);
             continue;
         }
+
         if((user_data[0] == 'y') || (user_data[0] == 'Y') || (user_data[0] == 'n') || (user_data[0] == 'N'))
             break;
 
@@ -592,64 +567,53 @@ bool tree_element::get_user_answer()
 
 char* get_data_from_user()
 {
-    //calloc
-    char* user_data = (char*) calloc(256, sizeof(char));
+    char* user_data = new char[256];
 
-    gets(user_data);
+    gets_s(user_data, 256);
 
+    int length = strlen(user_data);
+
+    while (user_data[length] == '?')
+        length--;
+
+    user_data[length] = '\0';
+           
     return user_data;
 }
 
-const void tree::update_database(char* name_file)
+void tree::update_database(const char* name_file)
 {
     assert(name_file && "no file name");
-    assert(this && "nullptr tree in update_database");
 
     FILE* database = fopen(name_file, "wb");
     assert(database && "Can't open file to update database");
 
-    print_elem(root_, database);
+    tree_element* root = get_root();
+    root->print_elem(database);
 
     return;
 }
 
-void tree_element::print_elem(tree_element* root, FILE* database)
+void tree_element::print_elem(FILE* database)
 {
-    //printf("in print_elem\n");
-    assert(root);
     assert(database);
     assert(this);
 
     fprintf(database, "[\n");
 
-    if(root->get_left())
+    if(get_left())
     {
-        //printf("If no\n ?%s? \n", root->non_const_get_data());
-        fprintf(database, "?%s?\n", root->non_const_get_data());
-        print_elem(root->get_left(), database);
+        fprintf(database, "?%.*s?\n", length_, data_);
+        get_left()->print_elem(database);
     }
 
-    if(root->get_right())
-    {
-        //printf("If yes ?%s? \n", root->non_const_get_data());
-        //fprintf(database, "?%s?\n", root->non_const_get_data());
-        print_elem(root->get_right(), database);
-    }
+    if(get_right())
+        get_right()->print_elem(database);
 
-    if( (root->get_right() == nullptr) && (root->get_left() == nullptr) )
-    {
-        //printf("`%s`\n", root->non_const_get_data());
-        fprintf(database, "`%s`\n", root->non_const_get_data());
-    }
-
-    /*if( (root->git_left() nullptr) && (root->git_right() == nullptr))
-        fprintf(database, "`%s`\n", root->non_const_get_data());
-
-    print_elem(root->get_left());
-    print_elem(root->get_right());
-      */
+    if( (get_right() == nullptr) && (get_left() == nullptr) )
+        fprintf(database, "`%.*s`\n", length_, data_);
 
     fprintf(database, "]\n");
-    //printf("return\n");
+
     return;
 }
