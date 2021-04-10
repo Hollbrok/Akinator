@@ -107,7 +107,6 @@ public:
 	void free_all();
 
     bool get_user_answer();
-
 };
 
 class tree:tree_element
@@ -162,6 +161,9 @@ public:
     void play_1();
 	void play_2();
     void play();
+
+	void graphic_play();
+
 
     void update_database(const char* name_file);
 

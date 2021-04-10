@@ -6,20 +6,20 @@
 
 int main()
 {
-    //SetConsoleCP(1251);
-    //SetConsoleOutputCP(1251);
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
 
 
 
 
 
-    //tree bin_tree("akinator");
+    tree bin_tree("akinator");
 
     //bin_tree.play();
 
     //system("PAUSE");
 
-    graphic_play();
+    bin_tree.graphic_play();
 
     
     return 0;

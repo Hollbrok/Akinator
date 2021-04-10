@@ -43,6 +43,8 @@ tree::~tree()
 {
 	assert(this && "nullptr in desctructor");
 
+    assert(root_);
+
     if (root_)
         root_->free_all();
     else
@@ -65,10 +67,10 @@ tree::~tree()
 
 void tree_element::free_all()
 {
-
-    if (left_)
+    assert(this);
+    if (get_left())
         left_->free_all();
-    if (right_)
+    if (get_right())
         right_->free_all();
 
     if (user_length_)
@@ -164,8 +166,9 @@ void tree::print_tree(bool need_graphviz_dump) const
         system("dot dump_temp.dot -Tpdf -o dump.pdf");
         system("del dump.dot");
         system("ren dump_temp.dot dump.dot");
-
+        printf("before system\n");
         system("dump.pdf");
+        printf("after system\n");
 	}
 
 
@@ -189,6 +192,20 @@ void tree::graphviz_dump(const char* dumpfile_name) const
     fprintf(dump, "}\n");
 
     fclose(dump);
+
+    //graphviz_dump("dump.dot");
+    printf("1");
+    system("iconv.exe -t UTF-8 -f  CP1251 < dump.dot > dump_temp.dot");
+    printf("2");
+    system("dot dump_temp.dot -Tpdf -o dump.pdf");
+    printf("3");
+    system("del dump.dot");
+    printf("4");
+    system("ren dump_temp.dot dump.dot");
+    printf("before system\n");
+    system("dump.pdf");
+    printf("after system\n");
+
     return;
 }
 
@@ -232,7 +249,7 @@ void tree::fill_tree(const char* name_file)
     printf("name of file = [%s]\n", name_file);
 	buffer_ = make_buffer(name_file);
     char* copy_of_buffer = buffer_;
-    if (strlen(buffer_) < 10)
+    if (strlen(buffer_) < 100)
     {
         printf("Buffer is empty\n");
         return;
@@ -601,13 +618,13 @@ void tree_element::print_elem(FILE* database)
 
     fprintf(database, "[\n");
 
-    if(get_left())
+    if(get_left() != nullptr)
     {
         fprintf(database, "?%.*s?\n", length_, data_);
         get_left()->print_elem(database);
     }
 
-    if(get_right())
+    if(get_right() != nullptr)
         get_right()->print_elem(database);
 
     if( (get_right() == nullptr) && (get_left() == nullptr) )
