@@ -101,6 +101,9 @@ void tree::graphic_play()
 	bool NEED_QUESTION = false;
 	bool QUESTION_DONE = false;
 	bool NEED_UPDATE_BASE = false;
+	bool REGIME_2 = false;
+	bool WAIT_FOR_REGIME = true;
+	bool PLAY_AGAIN = false;
 
 	// Объект, который, собственно, является главным окном приложения
 	RenderWindow window(VideoMode(800, 939), "Akinator", Style::Default, settings);
@@ -155,6 +158,21 @@ void tree::graphic_play()
 	regime1.setString("Угадайка");
 	regime1.setPosition(120, 350);
 
+	Text regime2("", font, 50);
+	regime2.setColor(Color::Blue);
+	regime2.setStyle(Text::Bold);
+
+	regime2.setString("Дерево");
+	regime2.setPosition(120 + X_BUT_SIZE + 50, 350);
+
+	RectangleShape reg2_rect(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
+
+	// Перемещаем его в нужное место
+	reg2_rect.move(100 + X_BUT_SIZE + 50, 340);
+
+	// Устанавливаем ему цвет
+	reg2_rect.setFillColor(Color(175, 180, 240));
+
 
 	Text yes_text("Да", font, 50);
 	yes_text.setColor(Color::Green);
@@ -197,6 +215,7 @@ void tree::graphic_play()
 	// Устанавливаем ему цвет
 	reg1_rect.setFillColor(Color(175, 180, 240));
 
+
 	RectangleShape exit_rect(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
 
 	// Перемещаем его в нужное место
@@ -213,17 +232,20 @@ void tree::graphic_play()
 
 	tmp_root = root_;
 
-	//printf("root_ = %p\nleft = %p\n,right = %p\n", root_, root_->get_left(), root_->get_right());
+	Text user_text("", font, 50);
+	user_text.setColor(Color::Red);
+	user_text.setStyle(Text::Bold);
 
-	//tree_element* copy_of_root = new tree_element;
-	//printf("root_ = %p\n", root_);
+	//text.setString("Играть");
+	user_text.setPosition(150, 440);
 
-	//copy_of_root = root_;
-	//printf("copy_of_root = %p\n", copy_of_root);
+	RectangleShape user_word_rect(Vector2f( 500, Y_BUT_SIZE));
 
-	//printf("before dump\n");
-	//graphviz_dump();
-	//printf("after dump\n");
+	// Перемещаем его в нужное место
+	user_word_rect.move(150, 440);
+
+	// Устанавливаем ему цвет
+	user_word_rect.setFillColor(Color(175, 180, 240));
 
 	char question[100];
 	// Главный цикл приложения. Выполняется, пока открыто окно
@@ -260,6 +282,11 @@ void tree::graphic_play()
 				if (event.key.code == Mouse::Left)
 				{
 					//printf("x = %d,y = %d\n LT_BUT_POSITION = %d, LB_BUT_POSITION = %d\n", x, y, LT_BUT_POSITION, LB_BUT_POSITION);
+					if ((LB_BUT_POSITION + Y_BUT_SIZE + 10 <= y) && (y <= LB_BUT_POSITION + Y_BUT_SIZE + Y_BUT_SIZE + 10))
+					{
+						if ((LT_BUT_POSITION <= x) && (x <= (LT_BUT_POSITION + X_BUT_SIZE)))
+							window.close();
+					}
 					if (DRAW_BUTTON)
 					{
 						if ((LT_BUT_POSITION <= x) && (x <= (LT_BUT_POSITION + X_BUT_SIZE)))
@@ -292,12 +319,7 @@ void tree::graphic_play()
 					else if (REGIME_1)
 					{
 						//printf("REGIME!!!!!!!\n");
-						if ((LB_BUT_POSITION + Y_BUT_SIZE + 10 <= y) && (y <= LB_BUT_POSITION + Y_BUT_SIZE + Y_BUT_SIZE + 10))
-						{
-							if ((LT_BUT_POSITION <= x) && (x <= (LT_BUT_POSITION + X_BUT_SIZE)))
-								window.close();
-						}
-						else
+						if(true)
 						{
 							//printf("x = %d\ny = %d\n", x, y);
 							if ((440 <= y) && (y <= 440 + Y_BUT_SIZE))
@@ -365,7 +387,9 @@ void tree::graphic_play()
 										//question[tmp_root->length_] = '\0';
 										text.move(125, 0);
 										text.setString("УРА");
+
 										REGIME_1 = false;
+										//PLAY_AGAIN = true;
 									}
 
 									//printf("YES BUTTON\n");
@@ -374,12 +398,15 @@ void tree::graphic_play()
 						}
 						//graphviz_dump();
 					}
-					else
+					else if (NEED_MENU)
 					{
+						printf("in menu\n");
+						printf("x = %d,  y = %d\n", x , y);
 						if ((100 <= x) && (x <= 100 + X_BUT_SIZE))
 						{
 							if ((340 <= y) && (y <= 340 + Y_BUT_SIZE))
 							{
+								printf("REGIME_1\n");
 								NEED_MENU = false;
 								REGIME_1 = true;
 
@@ -392,10 +419,30 @@ void tree::graphic_play()
 								text.setCharacterSize(30);
 								text.setString(question);
 							}
+							//WAIT_FOR_REGIME = false;
 						}
-						else if ((LB_BUT_POSITION + Y_BUT_SIZE + 10 <= y) && (y <= LB_BUT_POSITION + Y_BUT_SIZE + Y_BUT_SIZE + 10))
-							window.close();
+						else if ((100 + X_BUT_SIZE + 50 <= x) && (x <= 100 + X_BUT_SIZE + 50 + X_BUT_SIZE))
+						{
+							if ((340 <= y) && (y <= 340 + Y_BUT_SIZE))
+							{
+								NEED_MENU = false;
+								REGIME_2 = true;
+
+								//char* question = new char[tmp_root->length_];
+								//strncpy(question, root_->data_, root_->length_);
+								//question[root_->length_] = '?';
+								//question[root_->length_ + 1] = '\0';
+
+
+								//text.setCharacterSize(30);
+								//text.setString(question);
+							}
+							//WAIT_FOR_REGIME = false;
+						}
 					}
+					if ((100 + X_BUT_SIZE + 50 <= x) && (x <= 100 + X_BUT_SIZE + 50 + X_BUT_SIZE))
+						if ((LB_BUT_POSITION + Y_BUT_SIZE + 10 <= y) && (y <= LB_BUT_POSITION + Y_BUT_SIZE + Y_BUT_SIZE + 10))
+							window.close();
 
 				}
 			}
@@ -448,6 +495,14 @@ void tree::graphic_play()
 						else if (event.key.code == Keyboard::M) user_word[cur_size++] = 'ь';
 						else if (event.key.code == Keyboard::Q) user_word[cur_size++] = 'й';
 						else if (event.key.code == Keyboard::Space) user_word[cur_size++] = ' ';
+						else if (event.key.code == Keyboard::BackSpace) {
+							if (cur_size > 0)
+								user_word[cur_size--] = '\0';
+							else printf("cur_size == 0\n");
+						}
+
+						user_word[cur_size] = '\0';
+						user_text.setString(user_word);
 					}
 
 				}
@@ -499,6 +554,14 @@ void tree::graphic_play()
 						else if (event.key.code == Keyboard::N) user_question[cur_size_q++] = 'т';
 						else if (event.key.code == Keyboard::M) user_question[cur_size_q++] = 'ь';
 						else if (event.key.code == Keyboard::Q) user_question[cur_size_q++] = 'й';
+						else if (event.key.code == Keyboard::BackSpace) {
+							if (cur_size_q > 0)
+								user_question[cur_size_q--] = '\0';
+							else printf("cur_size_q == 0\n");
+						}
+
+						user_question[cur_size_q] = '\0';
+						user_text.setString(user_question);
 					}
 
 				}
@@ -520,6 +583,12 @@ void tree::graphic_play()
 				" REGIME_1 = %d\n"
 				" WORD_DONE = %d\n", DRAW_BUTTON, NEED_MENU, FIND_WORD, REGIME_1, WORD_DONE);
 				*/
+		if (PLAY_AGAIN)
+		{
+			
+			window.draw(rectangle);
+			window.draw(text);
+		}
 		if (DRAW_BUTTON)
 			window.draw(text);
 		else if (NEED_MENU)
@@ -530,10 +599,20 @@ void tree::graphic_play()
 			window.draw(reg1_rect);
 			window.draw(regime1);
 
+			window.draw(reg2_rect);
+			window.draw(regime2);
+
 		}
-		else if (FIND_WORD)
+		else if (FIND_WORD && !WAIT_WORD)
 		{
 			window.draw(text);
+			//text.setString("Выберите режим игры:");
+			//PLAY_AGAIN = true;
+			window.draw(rectangle);
+			window.draw(text);
+
+			//DRAW_BUTTON = false;
+			//NEED_MENU = true;
 		}
 		else if (REGIME_1)
 		{
@@ -557,6 +636,7 @@ void tree::graphic_play()
 			NEED_QUESTION = true;
 			text.move(-100, 0);
 			text.setString("Чем ваш предмет отличается от моего?");
+			user_text.setString("");
 		}
 		if (QUESTION_DONE)
 		{
@@ -566,12 +646,32 @@ void tree::graphic_play()
 			NEED_UPDATE_BASE = true;
 			text.move(75, 0);
 			text.setString("Спасибо большое за игру!");
+			//NEED_MENU = true;
+			//tmp_root = root_;
 		}
 
 		if (NEED_QUESTION)
 		{
+			printf("here\n");
 			window.draw(text);
+
+			window.draw(user_word_rect);
+			window.draw(user_text);
 		}
+		if (WAIT_WORD)
+		{
+			window.draw(user_word_rect);
+			window.draw(user_text);
+		}
+		if (REGIME_2)
+		{
+			show_tree();
+			REGIME_2 = false;
+			
+			NEED_MENU = true;
+			text.setString("Выберите режим игры:");
+		}
+
 		// EXIT BUTTON
 		window.draw(exit_rect);
 		window.draw(exit_but);
