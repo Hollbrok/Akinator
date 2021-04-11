@@ -12,7 +12,7 @@
 	- [X] 5) Нажав на соответственную кнопку __играть__ перед вами будут доступные режимы для игры: <details><summary></summary>
 			<img src="https://github.com/Hollbrok/Akinator/blob/master/example%20of%20dump/For%20README/Regimes.png" width = 400>  
 	
-		- [X] 5.1) Режим __Угадайка__ -- это классический режим игры в акинатора, при котором вы загадываете предмет, а __акинатор__ пытается угадать при помощи различных вопросов, с вариантами ответа __да__/__нет__.
+		- [X] 5.1) Режим __Угадайка__ -- это классический режим игры в акинатора, при котором вы загадываете предмет, а __акинатор__ пытается угадать при помощи различных вопросов, с вариантами ответа __да__/__нет__.<details><summary></summary>
 			- [X] 5.1.1) А вам нужно просто честно отвечать на его __вопросы__:        
 					<img src="https://github.com/Hollbrok/Akinator/blob/master/example%20of%20dump/For%20README/Regime_1.png" width = 400> 
 			
@@ -23,7 +23,7 @@
 			- [X] 5.1.3) В конце игры __котик__ поблагодарит тебя за игру )
 				<img src="https://github.com/Hollbrok/Akinator/blob/master/example%20of%20dump/For%20README/Regime_1_end.png" width = 400>
 	
-		- [X] 5.2) __Дерево__ -- режим просмотра всей доступной акинатору __базы__:
+		- [X] 5.2) __Дерево__ -- режим просмотра всей доступной акинатору __базы__: <details><summary></summary>
 				<img src="https://github.com/Hollbrok/Akinator/blob/master/example%20of%20dump/For%20README/Regime_2.png" width = 800>    
 
 
