@@ -1,5 +1,5 @@
-# Как установить и сыграть
- Для того, чтобы вы могли сыграть в акинатора нужно сделать следующие шаги: <details><summary></summary>
+# Как установить и сыграть<details><summary></summary>
+ Для того, чтобы вы могли сыграть в акинатора нужно сделать следующие шаги: 
  * 1) Скачать все содержимое [__папки__](https://github.com/Hollbrok/Akinator/tree/master/DOWNLOAD%20TO%20PLAY). Так же доступка [__ссылка__](https://drive.google.com/drive/folders/1uVD-hGzzuZk1l0gJ9whLjAOdM0LeLxW_?usp=sharing) на скачивание с гугл диска.
  * 2) После скачивания у вас в папке должно быть примерно следующее __содержимое__:
     <img src="https://github.com/Hollbrok/Akinator/blob/master/example%20of%20dump/For%20README/package.png" width = 600>
