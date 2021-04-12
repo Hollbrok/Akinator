@@ -237,7 +237,7 @@ void tree::graphic_play()
 	user_text.setStyle(Text::Bold);
 
 	//text.setString("Играть");
-	user_text.setPosition(150, 440);
+	user_text.setPosition(150 + 100 + 150, 440);
 
 	RectangleShape user_word_rect(Vector2f( 500, Y_BUT_SIZE));
 
@@ -302,9 +302,9 @@ void tree::graphic_play()
 
 								text.setColor(Color::Black);
 								text.setString("Выберите режим игры:");
-
-								text.move(-170, -330);
-
+								// 305 560
+								text.move(-150, -330);
+								// 155 230
 								// Перемещаем его в нужное место
 								rectangle.move(-170, -330);
 
@@ -334,10 +334,17 @@ void tree::graphic_play()
 
 										question[tmp_root->length_] = '?';
 										question[tmp_root->length_ + 1] = '\0';
-
-
+										
+										//text.move( - static_cast<int>((strlen(question) - tmp_root->get_prev()->length_) * 15), 0 );
+										//text.move(((static_cast<int>(tmp_root->length_ + 1)/ (tmp_root->get_prev())->length_ + 1) - 1) * 30 * (tmp_root->get_prev())->length_ + 1, 0);
+										printf("prev length = %d\n"
+											"cur length = %d\n"
+											"delta = %d\n", tmp_root->get_prev()->length_, tmp_root->length_, tmp_root->length_ - tmp_root->get_prev()->length_);
+										//155 230
+										text.setPosition(155 + 125 + (static_cast<int>(tmp_root->length_ + 1) / 20) * (-30), 230);
+										//text.move((static_cast<int>(tmp_root->length_ + 1) - static_cast<int>(tmp_root->get_prev()->length_) + 1) * (-15) / static_cast<int>(tmp_root->get_prev()->length_ + 1), 0);
 										text.setString(question);
-									}
+									} 
 									else
 									{
 										FIND_WORD = true;
@@ -346,7 +353,8 @@ void tree::graphic_play()
 										//tmp_root = tmp_root->get_left();
 										//strncpy(question, tmp_root->data_, tmp_root->length_);
 										//question[tmp_root->length_] = '\0';
-										text.move(100, 0);
+										//155 230
+										text.setPosition(205, 230);
 										text.setString("Какой был предмет?");
 										WAIT_WORD = true;
 										REGIME_1 = false;
@@ -370,6 +378,15 @@ void tree::graphic_play()
 										
 										question[tmp_root->length_] = '?';
 										question[tmp_root->length_ + 1] = '\0';
+											
+										//printf("prev length = %d\n"
+										//	"cur length = %d\n"
+										//	"delta = %d\n", tmp_root->get_prev()->length_, tmp_root->length_, tmp_root->length_ - tmp_root->get_prev()->length_);
+										//text.move(((static_cast<int>(tmp_root->length_ + 1) / (tmp_root->get_prev())->length_ + 1) - 1) * 30 * (tmp_root->get_prev())->length_ + 1, 0);
+										//text.move(- static_cast<int>((strlen(question) - tmp_root->get_prev()->length_) * 15), 0);
+										//text.move((tmp_root->length_ - (tmp_root->get_prev()->length_)) * 1, 0);
+										//text.move((static_cast<int>(tmp_root->length_) - static_cast<int>(tmp_root->get_prev()->length_))/ static_cast<int>(tmp_root->get_prev()->length_ + 1) * (-15) , 0);
+										text.setPosition(155 + 125 + (static_cast<int>(tmp_root->length_ + 1) / 20 ) * (-30), 230);
 
 										text.setString(question);
 
@@ -385,7 +402,10 @@ void tree::graphic_play()
 										//tmp_root = tmp_root->get_left();
 										//strncpy(question, tmp_root->data_, tmp_root->length_);
 										//question[tmp_root->length_] = '\0';
-										text.move(125, 0);
+										//text.move(125, 0);
+										text.setPosition(155 + 125 + (3 / 20 - 1) * (-30), 230);
+										//text.move((static_cast<int>(3) - static_cast<int>(tmp_root->get_prev()->length_) + 1) / static_cast<int>(tmp_root->get_prev()->length_ + 1)  * (-15), 0);
+										//text.move((tmp_root->length_ - (tmp_root->get_prev()->length_)) * 20, 0);
 										text.setString("УРА");
 
 										REGIME_1 = false;
@@ -400,13 +420,13 @@ void tree::graphic_play()
 					}
 					else if (NEED_MENU)
 					{
-						printf("in menu\n");
-						printf("x = %d,  y = %d\n", x , y);
+						//printf("in menu\n");
+						//printf("x = %d,  y = %d\n", x , y);
 						if ((100 <= x) && (x <= 100 + X_BUT_SIZE))
 						{
 							if ((340 <= y) && (y <= 340 + Y_BUT_SIZE))
 							{
-								printf("REGIME_1\n");
+								//printf("REGIME_1\n");
 								NEED_MENU = false;
 								REGIME_1 = true;
 
@@ -414,10 +434,19 @@ void tree::graphic_play()
 								strncpy(question, root_->data_, root_->length_);
 								question[root_->length_] = '?';
 								question[root_->length_ + 1] = '\0';
-
-
+								
+								//text.move(- static_cast<int>((strlen(question) - strlen("Выберите режим игры:")) * 15), 0);
+								//printf("prev length = %d\n"
+								//	"cur length = %d\n"
+								//	"delta = %d\n", strlen("Выберите режим игры:") , tmp_root->length_, tmp_root->length_ - strlen("Выберите режим игры:"));
+								//text.move( (tmp_root->length_ - strlen("Выберите режим игры:")), 0);
+								
+								text.setPosition(155 + 125 + (static_cast<int>(tmp_root->length_ + 1) / 20 - 1) * (-30), 230);
+								//text.move((static_cast<int>(tmp_root->length_ + 1) - 20) / 20 * (-15), 0);
+								//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 								text.setCharacterSize(30);
 								text.setString(question);
+								//printf("%s", question);
 							}
 							//WAIT_FOR_REGIME = false;
 						}
@@ -457,6 +486,7 @@ void tree::graphic_play()
 						WAIT_WORD = false;
 						WORD_DONE = true;
 						user_word[cur_size] = '\0';
+						user_text.setPosition(150 + 100 + 150, 440);
 					}
 					else
 					{
@@ -495,14 +525,29 @@ void tree::graphic_play()
 						else if (event.key.code == Keyboard::M) user_word[cur_size++] = 'ь';
 						else if (event.key.code == Keyboard::Q) user_word[cur_size++] = 'й';
 						else if (event.key.code == Keyboard::Space) user_word[cur_size++] = ' ';
+						else if (event.key.code == Keyboard::Num1) user_word[cur_size++] = '1';
+						else if (event.key.code == Keyboard::Num2) user_word[cur_size++] = '2';
+						else if (event.key.code == Keyboard::Num3) user_word[cur_size++] = '3';
+						else if (event.key.code == Keyboard::Num4) user_word[cur_size++] = '4';
+						else if (event.key.code == Keyboard::Num5) user_word[cur_size++] = '5';
+						else if (event.key.code == Keyboard::Num6) user_word[cur_size++] = '6';
+						else if (event.key.code == Keyboard::Num7) user_word[cur_size++] = '7';
+						else if (event.key.code == Keyboard::Num8) user_word[cur_size++] = '8';
+						else if (event.key.code == Keyboard::Num9) user_word[cur_size++] = '9';
+						else if (event.key.code == Keyboard::Num0) user_word[cur_size++] = '0';						
 						else if (event.key.code == Keyboard::BackSpace) {
 							if (cur_size > 0)
+							{
 								user_word[cur_size--] = '\0';
+								user_text.move(+30, 0);
+							}
 							else printf("cur_size == 0\n");
+							
 						}
 
 						user_word[cur_size] = '\0';
 						user_text.setString(user_word);
+						user_text.move(-15, 0);
 					}
 
 				}
@@ -554,14 +599,29 @@ void tree::graphic_play()
 						else if (event.key.code == Keyboard::N) user_question[cur_size_q++] = 'т';
 						else if (event.key.code == Keyboard::M) user_question[cur_size_q++] = 'ь';
 						else if (event.key.code == Keyboard::Q) user_question[cur_size_q++] = 'й';
+						else if (event.key.code == Keyboard::Num0) user_question[cur_size_q++] = '0';
+						else if (event.key.code == Keyboard::Num1) user_question[cur_size_q++] = '1';
+						else if (event.key.code == Keyboard::Num2) user_question[cur_size_q++] = '2';
+						else if (event.key.code == Keyboard::Num3) user_question[cur_size_q++] = '3';
+						else if (event.key.code == Keyboard::Num4) user_question[cur_size_q++] = '4';
+						else if (event.key.code == Keyboard::Num5) user_question[cur_size_q++] = '5';
+						else if (event.key.code == Keyboard::Num6) user_question[cur_size_q++] = '6';
+						else if (event.key.code == Keyboard::Num7) user_question[cur_size_q++] = '7';
+						else if (event.key.code == Keyboard::Num8) user_question[cur_size_q++] = '8';
+						else if (event.key.code == Keyboard::Num9) user_question[cur_size_q++] = '9';
 						else if (event.key.code == Keyboard::BackSpace) {
 							if (cur_size_q > 0)
+							{
 								user_question[cur_size_q--] = '\0';
+								user_text.move(+30, 0);
+							}
 							else printf("cur_size_q == 0\n");
+							
 						}
 
 						user_question[cur_size_q] = '\0';
 						user_text.setString(user_question);
+						user_text.move(-15, 0);
 					}
 
 				}
@@ -652,7 +712,7 @@ void tree::graphic_play()
 
 		if (NEED_QUESTION)
 		{
-			printf("here\n");
+			//printf("here\n");
 			window.draw(text);
 
 			window.draw(user_word_rect);
@@ -662,6 +722,7 @@ void tree::graphic_play()
 		{
 			window.draw(user_word_rect);
 			window.draw(user_text);
+			window.draw(text);
 		}
 		if (REGIME_2)
 		{
