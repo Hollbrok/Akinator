@@ -49,6 +49,7 @@ public:
 #define VERIFICATION ;
 #endif /* _DEBUG */
 
+
 class tree_element
 {
 private:
@@ -66,10 +67,17 @@ public:
 	data_type user_data_ = 0;
 	size_t	user_length_ = 0;
 
-    tree_element(data_type data = 0, tree_element* prev = nullptr,
+// * Constr and Deconstr
+   
+	tree_element(data_type data = 0, tree_element* prev = nullptr,
                 tree_element* left = nullptr, tree_element* right = nullptr);
 	
 	~tree_element();
+
+	void free_all();
+
+// *
+
 
 //! SETTERS
 
@@ -82,9 +90,9 @@ public:
 	void set_prev(tree_element* new_prev) {prev_ = new_prev;};
 
 
-//! GETTERS
+//! CONST GETTERS
 
-	const data_type& get_data()     const {assert(this && "You passed nullptr to get_data()"); return data_;};
+	const data_type&	get_data()  const {assert(this && "You passed nullptr to get_data()"); return data_;};
 
 	const tree_element* get_left()  const {assert(this && "nullptr tree_element in get_next()"); return left_;};
 	const tree_element* get_right() const {assert(this && "nullptr tree_element in get_next()"); return right_;};
@@ -94,17 +102,15 @@ public:
 
  	data_type non_const_get_data() {assert(this && "You passed nullptr to get_data()"); return data_;};
 
-    data_type& get_data() {assert(this && "You passed nullptr to get_data()"); return data_;};
-
     tree_element* get_left()  {assert(this && "nullptr tree_element in get_next()"); return left_;};
 	tree_element* get_right() {assert(this && "nullptr tree_element in get_next()"); return right_;};
 	tree_element* get_prev()  {assert(this && "nullptr tree_element in get_prev()"); return prev_;};
 
-    void build_prev_connections(tree_element* root);
+//! OTHER
+	
+	void build_prev_connections(tree_element* root);
 
     void print_elem(FILE* database);
-
-	void free_all();
 
     bool get_user_answer();
 };
@@ -121,23 +127,16 @@ private:
 
 	char* buffer_ = nullptr;
 
-
-//! PRIVATE SETTERS
-
-    // set_root(tree_element* new_root) {assert(new_root && "You passed nullptr new_root"); root_ = new_root;};
-	// i do'nt need this function cause i can just use root_ = something ..
-
-
 public:
+
+// * Constr and Deconstr
+
 	tree(const char* name);
 	~tree();
 
-//! SETTERS
+// *
 
-	//set_root(tree_element* new_root) {assert(new_root && "You passed nullptr new_root"); root_ = new_root;};
-	// Neew to change left and right elements;
-
-// * MAIN SETTERS
+// * ADDERS
 
 	tree_element* add_to_right(tree_element* x, data_type number);
 	tree_element* add_to_left(tree_element* x, data_type number);
@@ -147,16 +146,15 @@ public:
 
 	tree_element* get_root() {return root_;};
 
-// * MAIN GETTERS
+//! FILL TREE FUNCTIONS
 
-	void print_tree(bool need_graphviz_dump = false)
-									const;
-	void graphviz_dump(const char* dumpfile_name = "dump.dot")
-						 			const;
-	void graphviz_beauty_dump(const char* dumpfile_name)
-									const;
+	void fill_tree(const char* name_file);
 
-    void fill_tree(const char* name_file);
+	void update_database(const char* name_file);
+
+	tree_element* fill_root();
+
+// * PLAY
 
     void play_1();
 	void play_2();
@@ -165,32 +163,42 @@ public:
 	void graphic_play();
 
 
-    void update_database(const char* name_file);
+
+//! GRAPHVIZ DUMP
+
+	void print_tree_info()
+		const;
+
+	void graphviz_dump(const char* dumpfile_name = "dump.dot")
+		const;
+
+	void graphviz_beauty_dump(const char* dumpfile_name)
+		const;
 
 	void show_tree() const;
 
-	tree_element* fill_root();
-    //tree_element* fill_root(char* buffer);
-    //tree_element* fill_root(char** buffer);
-
-
-	//const tree_element* get_root() const {return root_;};
-
 };
 
-
+//! For dump
 
 void print_all_elements(tree_element* tmp, FILE* dump);
 void print_all_elements_beauty(tree_element* tmp, FILE* dump);
-void print_hello();
-void check_answer(tree_element* question);
+
+//! Make buffer
 
 long size_of_file(FILE *user_code);
 char* make_buffer(const char* name_file);
 
+
+//! Console play
+
+void print_hello();
+void check_answer(tree_element* question);
 int get_number_of_game();
 char* get_data_from_user();
 
-void free_all(tree_element* root);
+tree_element* create_root(char* data, tree_element* left = nullptr, tree_element* right = nullptr, tree_element* prev = nullptr);
+
+//void free_all(tree_element* root);
 
 #endif // TREE_H_INCLUDED

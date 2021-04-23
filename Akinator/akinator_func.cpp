@@ -1,68 +1,32 @@
 #include "akinator.h"
 
-const int LT_BUT_POSITION = 265;
-const int LB_BUT_POSITION = 550;
+constexpr int LT_BUT_POSITION = 265;
+constexpr int LB_BUT_POSITION = 550;
 
-const int X_BUT_SIZE = 250;
-const int Y_BUT_SIZE = 100;
+constexpr int X_BUT_SIZE = 250;
+constexpr int Y_BUT_SIZE = 100;
+
+const char* BG_PATH		  = "C:/Users/Danik/Documents/Visual Studio 2019/Projects/Akinator/backgraund.jpg";
+const char* TX_STYLE_PATH = "C:/Users/Danik/Documents/Visual Studio 2019/Projects/Akinator/CyrilicOld.TTF";
+
+#define L_R_NULLPTR(root)												\
+	((root->get_left() == nullptr) && (root->get_right() == nullptr))
+
+
+#define CR_TEXT(Text_name, size, color, text, Xpos, Ypos)		\
+	Text Text_name("", font, size);								\
+	Text_name.setColor(color);									\
+	Text_name.setStyle(Text::Bold);								\
+	Text_name.setString(text);									\
+	Text_name.setPosition(Xpos, Ypos)	
+
+
+#define CR_RECT(Name, Xsize, Ysize, moveX, moveY, color)		\
+	RectangleShape Name (Vector2f(Xsize, Ysize));				\
+	Name.move(moveX, moveY);									\
+	Name.setFillColor(color)	
 
 #pragma warning(disable : 4996)
-
-void print_all_elements(tree_element* tmp, FILE* dump)
-{
-	assert(tmp && "tmp is nullptr in print_all_elements");
-
-	if(tmp->get_right())
-	{
-		print_all_elements(tmp->get_right(), dump);
-		fprintf(dump, "\"%p\" -> \"%p\" [label=\"Да\", fontcolor=darkblue]\n", tmp, tmp->get_right());
-		fprintf(dump, "\"%p\" -> \"%p\" [label=\"Да\", fontcolor=darkblue]\n", tmp->get_right(), (tmp->get_right())->get_prev());
-	}
-	if (tmp->get_left())
-	{
-		print_all_elements(tmp->get_left(), dump);
-        fprintf(dump, "\"%p\" -> \"%p\" [label=\"Нет\", fontcolor=darkblue]\n", tmp, tmp->get_left());
-		fprintf(dump, "\"%p\" -> \"%p\" [label=\"Нет\", fontcolor=darkblue]\n", tmp->get_left(), (tmp->get_left())->get_prev());
-	}
-
-
-    if((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
-		fprintf(dump, "\"%p\" [label = \"<f0> value = [%.*s]|{<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = lightgreen] \n", tmp, tmp->length_, tmp->non_const_get_data(), tmp->get_left(), tmp->get_prev(), tmp->get_right());
-	else
-		if(tmp->get_prev() == nullptr)
-			fprintf(dump, "\"%p\" [label = \"{<f0> value = [%.*s] |<here> [%p]}|{<f1> right| <here> prev| left}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, tmp->length_, tmp->non_const_get_data(), tmp, tmp->get_left(), tmp->get_prev(), tmp->get_right());
-		else 
-			fprintf(dump, "\"%p\" [label = \"{<f0> value = [%.*s] |<here> [%p]}|{<f1> right| <here> prev| left}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = purple] \n", tmp, tmp->length_, tmp->non_const_get_data(), tmp, tmp->get_left(), tmp->get_prev(), tmp->get_right());
-
-
-    return;
-
-}
-
-void print_all_elements_beauty(tree_element* tmp, FILE* dump)
-{
-	assert(tmp && "tmp is nullptr in print_all_elements");
-
-	if (tmp->get_right())
-	{
-		print_all_elements_beauty(tmp->get_right(), dump);
-		fprintf(dump, "\"%p\" -> \"%p\" [label=\"Да\", fontcolor=darkblue]\n", tmp, tmp->get_right());
-	}
-	if (tmp->get_left())
-	{
-		print_all_elements_beauty(tmp->get_left(), dump);
-		fprintf(dump, "\"%p\" -> \"%p\" [label=\"Нет\", fontcolor=darkblue]\n", tmp, tmp->get_left());
-	}
-
-	if ((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
-		fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = lightgreen] \n", tmp, tmp->length_, tmp->non_const_get_data());
-	else
-		if(tmp->get_prev() == nullptr)
-			fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = red] \n", tmp, tmp->length_, tmp->non_const_get_data());
-		else
-			fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = purple] \n", tmp, tmp->length_, tmp->non_const_get_data());
-	return;
-}
 
 long size_of_file(FILE *user_code)
 {
@@ -77,7 +41,264 @@ long size_of_file(FILE *user_code)
 	return file_length;
 }
 
+char* make_buffer(const char* name_file)
+{
+	FILE* database = fopen("database.txt", "rb");
+	assert(database && "Can't open database.txt");
+
+	long file_length = size_of_file(database);
+
+	char* buffer = new char[file_length];
+	assert(buffer && "Can't calloc memory for buffer");
+
+	fread(buffer, sizeof(char), file_length, database);
+	return buffer;
+}
+
+void tree::play()
+{
+	assert(this && "You passed nullptr yo play()");
+
+	print_hello();
+
+	const char* name_of_file = "database.txt";
+	fill_tree(name_of_file);
+
+	while (true)
+	{
+		int number_of_game = get_number_of_game();
+
+		if (number_of_game == 5)
+			break;
+		else
+			switch (number_of_game)
+			{
+			case 1:
+				play_1();
+				break;
+			case 2:
+				play_2();
+				break;
+			case 3:
+				break;
+
+			default:
+				printf("Not indentified number of regime\n");
+				break;
+			}
+	}
+
+	printf("Updating data base..\n");
+
+	const char* name_of_new_base = "database.txt";
+	update_database(name_of_new_base);
+
+	printf("Done!\n");
+
+	return;
+}
+
+int get_number_of_game()
+{
+	int number_of_game = 0;
+	int number_of_scanf_digits = 0;
+
+	char user_data[256] = {};
+
+	while (true)
+	{
+		printf("Введите цифру режима игры: ");
+		gets_s(user_data);
+		user_data[strlen(user_data)] = '\0';
+
+		if (!isdigit(user_data[0]))
+			continue;
+
+		if (strlen(user_data) != 1)
+		{
+			fflush(stdin);
+			continue;
+		}
+
+		number_of_game = atoi(user_data);
+
+		if (!(0 < number_of_game) || !(number_of_game < 6))
+			continue;
+
+		break;
+	}
+	printf("\n\n");
+	return number_of_game;
+}
+
+void print_hello()
+{
+	printf("\t\tПриветствую тебя.\nЧтобы сыграть можешь выбрать один в следующих режимов игры:\n");
+
+	printf("\t1. Угадать загаданный предмет/героя\n");
+	printf("\t2. Показать базу\n");
+
+
+	printf("\t5. Выйти\n");
+	printf("\n");
+	return;
+}
+
+void tree::play_1()
+{
+	assert(this && "You passed nullptr tree to play_1");
+
+	if (root_)
+	{
+		printf("Правила игры:\n");
+		printf("\t 1) Загадайте предмет\n");
+		printf("\t 2) Я буду угадывать его\n");
+		printf("\t 3) Если ваш да, то введите \"y\" \n");
+		printf("\t 4) Если нет, то \"n\" \n\n\n");
+		check_answer(root_);
+	}
+	else
+		printf("Дерево не создано\n");
+
+	return;
+}
+
+void tree::play_2()
+{
+	show_tree();
+	return;
+}
+
+void check_answer(tree_element* question)
+{
+	assert(question && "nullptr question in check_answer");
+
+	if (L_R_NULLPTR(question))
+	{
+		printf("\t\tКажется я нашел ваш предмет!\n");
+
+		if (question->get_user_answer())
+			printf("\t\tЯ так рад, что смог угадать твой предмет!!\n");
+		else
+		{
+			tree_element* prev_question = question->get_prev();
+
+			printf("\t\tЖаль, что не удалось, но я\n\t\tпопробую угадать в следующий раз!\n");
+			printf("\t\tМожешь ввести имя загаданного предмета?\n:");
+
+			tree_element* user_element = create_root(get_data_from_user(), nullptr, nullptr, nullptr);
+
+			printf("\t\tА теперь какое-нибудь его свойство, которого нет в моем слове\n:");
+			
+			tree_element* user_attribute = create_root(get_data_from_user(), question, user_element, question->get_prev());
+
+			user_element->set_prev(user_attribute);
+			
+			if (prev_question->get_right() == question)
+				prev_question->set_right(user_attribute);
+
+			else if (prev_question->get_left() == question)
+				prev_question->set_left(user_attribute);
+
+			else
+				printf("Something bad in line: %d", __LINE__);
+				
+			user_attribute->set_prev(question->get_prev());
+			question->set_prev(user_attribute);
+			
+			printf("\t\tСпасибо, что пополнил базу!\n");
+		}
+	}
+	else if (question->get_user_answer())		// if true ==>> go to right
+		check_answer(question->get_right());	//
+	else                                        // else go to left
+		check_answer(question->get_left());
+
+	return;
+}
+
+bool tree_element::get_user_answer()
+{
+	printf("\t\t%.*s?\n", length_, data_);
+	char user_data[256] = {};
+
+	while (true)
+	{
+		gets_s(user_data);
+
+		if (strlen(user_data) != 1)
+		{
+			printf("Нет такого варианта ответа\n");
+			fflush(stdin);
+			continue;
+		}
+
+		if ((user_data[0] == 'y') || (user_data[0] == 'Y') || (user_data[0] == 'n') || (user_data[0] == 'N'))
+			break;
+
+		printf("Нет такого варианта ответа\n");
+		fflush(stdin);
+		continue;
+	}
+	return ((user_data[0] == 'Y') || (user_data[0] == 'y'));
+}
+
+char* get_data_from_user()
+{
+	char* user_data = new char[256];
+
+	gets_s(user_data, 256);
+
+	int length = strlen(user_data);
+
+	while (user_data[length] == '?')
+		length--;
+
+	user_data[length] = '\0';
+
+	return user_data;
+}
+
+void tree::update_database(const char* name_file)
+{
+	assert(name_file && "no file name");
+
+	FILE* database = fopen(name_file, "wb");
+	assert(database && "Can't open file to update database");
+
+	tree_element* root = get_root();
+	root->print_elem(database);
+
+	return;
+}
+
+void tree_element::print_elem(FILE* database)
+{
+	assert(database);
+	assert(this);
+
+	fprintf(database, "[\n");
+
+	if (get_left() != nullptr)
+	{
+		fprintf(database, "?%.*s?\n", length_, data_);
+		get_left()->print_elem(database);
+	}
+
+	if (get_right() != nullptr)
+		get_right()->print_elem(database);
+
+	if ((get_right() == nullptr) && (get_left() == nullptr))
+		fprintf(database, "`%.*s`\n", length_, data_);
+
+	fprintf(database, "]\n");
+
+	return;
+}
+
+
 using namespace sf;
+	
 void tree::graphic_play()
 {
 	assert(this);
@@ -85,203 +306,85 @@ void tree::graphic_play()
 	const char* name_of_file = "database.txt";
 	fill_tree(name_of_file);
 
-	//printf("Updating data base..\n");
-
-	// Устанавливаем 8-й уровень сглаживания
 	ContextSettings settings;
 	settings.antialiasingLevel = 8;
 
-	bool DRAW_BUTTON = true;
-	bool NEED_MENU = false;
-	bool REGIME_1 = false;
-	bool FIND_WORD = false;
-	bool NEED_UPDATE = false;
-	bool WAIT_WORD = false;
-	bool WORD_DONE = false;
-	bool NEED_QUESTION = false;
-	bool QUESTION_DONE = false;
+	bool NEED_MENU		= false;
+	bool REGIME_1		= false;
+	bool FIND_WORD		= false;
+	bool NEED_UPDATE	= false;
+	bool WAIT_WORD		= false;
+	bool WORD_DONE		= false;
+	bool NEED_QUESTION	= false;
+	bool QUESTION_DONE	= false;
 	bool NEED_UPDATE_BASE = false;
-	bool REGIME_2 = false;
+	bool REGIME_2		= false;
+	bool PLAY_AGAIN		= false;
+	
+	bool DRAW_BUTTON	 = true;
 	bool WAIT_FOR_REGIME = true;
-	bool PLAY_AGAIN = false;
 
-	// Объект, который, собственно, является главным окном приложения
 	RenderWindow window(VideoMode(800, 939), "Akinator", Style::Default, settings);
 
-
-	// Создаем переменную текстуры
 	Texture texture;
-
-	texture.loadFromFile("C:/Users/Danik/Documents/Visual Studio 2019/Projects/Akinator/backgraund.jpg");
-
-	// Создаем спрайт и устанавливаем ему нашу текстуру
+	texture.loadFromFile(BG_PATH);
 	Sprite sprite(texture);
-
-	// Устанавливаем ему цвет - зеленый
 	sprite.setColor(Color::Green);
 
-	// Создаем прямоугольник размером 
-	RectangleShape rectangle(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
 
-	// Перемещаем его в нужное место
-	rectangle.move(LT_BUT_POSITION, LB_BUT_POSITION);
-
-	// Устанавливаем ему цвет
-	rectangle.setFillColor(Color(175, 180, 240));
-
-	// Создаем прямоугольник размером 
-	//RectangleShape rectangle2(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
+	Font font; // ШРИФТ
+	font.loadFromFile(TX_STYLE_PATH);
 
 
-	Font font;
-	font.loadFromFile("C:/Users/Danik/Documents/Visual Studio 2019/Projects/Akinator/CyrilicOld.TTF");
+	CR_TEXT(text, 50, Color::Red, "Играть", LT_BUT_POSITION + 40, LB_BUT_POSITION + 10);
+	CR_TEXT(exit_but, 50, Color::Magenta, "Выйти", LT_BUT_POSITION + 40, LB_BUT_POSITION + 10 + Y_BUT_SIZE + 10);
+	CR_TEXT(regime1, 50, Color::Blue, "Угадайка", 120, 350);
+	CR_TEXT(regime2, 50, Color::Blue, "Дерево", 120 + X_BUT_SIZE + 50, 350);
+	CR_TEXT(yes_text, 50, Color::Green, "Да", 180, 450);
+	CR_TEXT(no_text, 50, Color::Red, "Нет", 170 + X_BUT_SIZE + 100, 450);
+	CR_TEXT(user_text, 50, Color::Red, "", 150 + 100 + 150, 440);
 
-	Text text("", font, 50);
-	text.setColor(Color::Red);
-	text.setStyle(Text::Bold);
-
-	text.setString("Играть");
-	text.setPosition(LT_BUT_POSITION + 40, LB_BUT_POSITION + 10);
-
-	Text exit_but("", font, 50);
-	exit_but.setColor(Color::Magenta);
-	exit_but.setStyle(Text::Bold);
-
-	exit_but.setString("Выйти");
-	exit_but.setPosition(LT_BUT_POSITION + 40, LB_BUT_POSITION + 10 + Y_BUT_SIZE + 10);
-
-
-	Text regime1("", font, 50);
-	regime1.setColor(Color::Blue);
-	regime1.setStyle(Text::Bold);
-
-	regime1.setString("Угадайка");
-	regime1.setPosition(120, 350);
-
-	Text regime2("", font, 50);
-	regime2.setColor(Color::Blue);
-	regime2.setStyle(Text::Bold);
-
-	regime2.setString("Дерево");
-	regime2.setPosition(120 + X_BUT_SIZE + 50, 350);
-
-	RectangleShape reg2_rect(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
-
-	// Перемещаем его в нужное место
-	reg2_rect.move(100 + X_BUT_SIZE + 50, 340);
-
-	// Устанавливаем ему цвет
-	reg2_rect.setFillColor(Color(175, 180, 240));
-
-
-	Text yes_text("Да", font, 50);
-	yes_text.setColor(Color::Green);
-	yes_text.setStyle(Text::Bold);
-
-	//	yes_text.setString("Да");
-	yes_text.setPosition(180, 450);
-
-	Text no_text("Нет", font, 50);
-	no_text.setColor(Color::Red);
-	no_text.setStyle(Text::Bold);
-
-	//	yes_text.setString("Да");
-	no_text.setPosition(170 + X_BUT_SIZE + 100, 450);
-
-
-	RectangleShape yes_rect(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
-
-	// Перемещаем его в нужное место
-	yes_rect.move(100, 440);
-
-	// Устанавливаем ему цвет
-	yes_rect.setFillColor(Color(175, 180, 240));
-
-
-	RectangleShape no_rect(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
-
-	// Перемещаем его в нужное место
-	no_rect.move(100 + X_BUT_SIZE + 100, 440);
-
-	// Устанавливаем ему цвет
-	no_rect.setFillColor(Color(175, 180, 240));
-
-
-	RectangleShape reg1_rect(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
-
-	// Перемещаем его в нужное место
-	reg1_rect.move(100, 340);
-
-	// Устанавливаем ему цвет
-	reg1_rect.setFillColor(Color(175, 180, 240));
-
-
-	RectangleShape exit_rect(Vector2f(X_BUT_SIZE, Y_BUT_SIZE));
-
-	// Перемещаем его в нужное место
-	exit_rect.move(LT_BUT_POSITION, LB_BUT_POSITION + Y_BUT_SIZE + 10);
-
-	// Устанавливаем ему цвет
-	exit_rect.setFillColor(Color(175, 180, 240));
-
-	Vector2i pos;
-	int x;
-	int y;
+	CR_RECT(rectangle, X_BUT_SIZE, Y_BUT_SIZE, LT_BUT_POSITION, LB_BUT_POSITION, Color(175, 180, 240));
+	CR_RECT(yes_rect, X_BUT_SIZE, Y_BUT_SIZE, 100, 440, Color(175, 180, 240));
+	CR_RECT(no_rect, X_BUT_SIZE, Y_BUT_SIZE, 100 + X_BUT_SIZE + 100, 440, Color(175, 180, 240));
+	CR_RECT(reg2_rect, X_BUT_SIZE, Y_BUT_SIZE, 100 + X_BUT_SIZE + 50, 340, Color(175, 180, 240));
+	CR_RECT(reg1_rect, X_BUT_SIZE, Y_BUT_SIZE, 100, 340, Color(175, 180, 240));
+	CR_RECT(exit_rect, X_BUT_SIZE, Y_BUT_SIZE, LT_BUT_POSITION, LB_BUT_POSITION + Y_BUT_SIZE + 10, Color(175, 180, 240));
+	CR_RECT(user_word_rect, 500, Y_BUT_SIZE, 150, 440, Color(175, 180, 240));
 
 	tree_element* tmp_root = new tree_element;
 
 	tmp_root = root_;
 
-	Text user_text("", font, 50);
-	user_text.setColor(Color::Red);
-	user_text.setStyle(Text::Bold);
-
-	//text.setString("Играть");
-	user_text.setPosition(150 + 100 + 150, 440);
-
-	RectangleShape user_word_rect(Vector2f( 500, Y_BUT_SIZE));
-
-	// Перемещаем его в нужное место
-	user_word_rect.move(150, 440);
-
-	// Устанавливаем ему цвет
-	user_word_rect.setFillColor(Color(175, 180, 240));
-
 	char question[100];
-	// Главный цикл приложения. Выполняется, пока открыто окно
 	char user_word[100];
 	int cur_size = 0;
 
 	char user_question[100];
 	int cur_size_q = 0;
 
+	Vector2i pos;
+	int x;
+	int y;
+
 	while (window.isOpen())
 	{
-
-		// Получаем координаты курсора мышки относительно окна нашего приложения
 		pos = Mouse::getPosition(window);
 		x = pos.x;
 		y = pos.y;
 
-		// Обрабатываем очередь событий в цикле
 		Event event;
 
 		while (window.pollEvent(event))
 		{
-
-			// Пользователь нажал на «крестик» и хочет закрыть окно?
 			if (event.type == sf::Event::Closed ||
 				(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape))
 				window.close();
-		
 
-			// Определяем, была ли нажата кнопка мыши?
 			if (event.type == Event::MouseButtonPressed)
 			{
-				// Если была нажата левая кнопка мыши, то открываем клетку
 				if (event.key.code == Mouse::Left)
 				{
-					//printf("x = %d,y = %d\n LT_BUT_POSITION = %d, LB_BUT_POSITION = %d\n", x, y, LT_BUT_POSITION, LB_BUT_POSITION);
 					if ((LB_BUT_POSITION + Y_BUT_SIZE + 10 <= y) && (y <= LB_BUT_POSITION + Y_BUT_SIZE + Y_BUT_SIZE + 10))
 					{
 						if ((LT_BUT_POSITION <= x) && (x <= (LT_BUT_POSITION + X_BUT_SIZE)))
@@ -293,7 +396,6 @@ void tree::graphic_play()
 						{
 							if ((LB_BUT_POSITION <= y) && (y <= LB_BUT_POSITION + Y_BUT_SIZE))
 							{
-								//printf("ok\n");
 								text.setColor(Color::Green);
 								window.draw(text);
 
@@ -302,13 +404,9 @@ void tree::graphic_play()
 
 								text.setColor(Color::Black);
 								text.setString("Выберите режим игры:");
-								// 305 560
 								text.move(-150, -330);
-								// 155 230
-								// Перемещаем его в нужное место
 								rectangle.move(-170, -330);
 
-								// Устанавливаем ему цвет
 								rectangle.setSize(sf::Vector2f(600, 100));
 								rectangle.setFillColor(Color(175, 180, 240));
 							}
@@ -318,10 +416,8 @@ void tree::graphic_play()
 					}
 					else if (REGIME_1)
 					{
-						//printf("REGIME!!!!!!!\n");
-						if(true)
+						if (true)
 						{
-							//printf("x = %d\ny = %d\n", x, y);
 							if ((440 <= y) && (y <= 440 + Y_BUT_SIZE))
 							{
 
@@ -334,121 +430,75 @@ void tree::graphic_play()
 
 										question[tmp_root->length_] = '?';
 										question[tmp_root->length_ + 1] = '\0';
-										
-										//text.move( - static_cast<int>((strlen(question) - tmp_root->get_prev()->length_) * 15), 0 );
-										//text.move(((static_cast<int>(tmp_root->length_ + 1)/ (tmp_root->get_prev())->length_ + 1) - 1) * 30 * (tmp_root->get_prev())->length_ + 1, 0);
-										printf("prev length = %d\n"
-											"cur length = %d\n"
-											"delta = %d\n", tmp_root->get_prev()->length_, tmp_root->length_, tmp_root->length_ - tmp_root->get_prev()->length_);
-										//155 230
-										text.setPosition(155 + 125 + (static_cast<int>(tmp_root->length_ + 1) / 20) * (-30), 230);
-										//text.move((static_cast<int>(tmp_root->length_ + 1) - static_cast<int>(tmp_root->get_prev()->length_) + 1) * (-15) / static_cast<int>(tmp_root->get_prev()->length_ + 1), 0);
+
+										text.setPosition(155 + 125 + ((tmp_root->length_ + 1) / 20) * (-30), 230);
 										text.setString(question);
-									} 
+									}
 									else
 									{
 										FIND_WORD = true;
 										tmp_root->set_left(nullptr);
 										tmp_root->set_right(nullptr);
-										//tmp_root = tmp_root->get_left();
-										//strncpy(question, tmp_root->data_, tmp_root->length_);
-										//question[tmp_root->length_] = '\0';
-										//155 230
+
 										text.setPosition(205, 230);
 										text.setString("Какой был предмет?");
 										WAIT_WORD = true;
+									
 										REGIME_1 = false;
 
 										NEED_UPDATE = true;
 									}
-
-									//printf("NO BUTTON\n");
 								}
 								else if ((100 <= x) && (x <= 350))
 								{
 									if (tmp_root->get_right())
 									{
-										//printf("tmp_root = %p\nright = %p\nleft = %p\n", tmp_root, tmp_root->get_right(), tmp_root->get_left());
-
 										tmp_root = tmp_root->get_right();
 
-										//printf("tmp_root = %p\nright = %p\nleft = %p\n", tmp_root->get_prev(), (tmp_root->get_prev())->get_right(), (tmp_root->get_prev())->get_left());
-
 										strncpy(question, tmp_root->data_, tmp_root->length_);
-										
+
 										question[tmp_root->length_] = '?';
 										question[tmp_root->length_ + 1] = '\0';
-											
-										//printf("prev length = %d\n"
-										//	"cur length = %d\n"
-										//	"delta = %d\n", tmp_root->get_prev()->length_, tmp_root->length_, tmp_root->length_ - tmp_root->get_prev()->length_);
-										//text.move(((static_cast<int>(tmp_root->length_ + 1) / (tmp_root->get_prev())->length_ + 1) - 1) * 30 * (tmp_root->get_prev())->length_ + 1, 0);
-										//text.move(- static_cast<int>((strlen(question) - tmp_root->get_prev()->length_) * 15), 0);
-										//text.move((tmp_root->length_ - (tmp_root->get_prev()->length_)) * 1, 0);
-										//text.move((static_cast<int>(tmp_root->length_) - static_cast<int>(tmp_root->get_prev()->length_))/ static_cast<int>(tmp_root->get_prev()->length_ + 1) * (-15) , 0);
-										text.setPosition(155 + 125 + (static_cast<int>(tmp_root->length_ + 1) / 20 ) * (-30), 230);
+
+										text.setPosition(155 + 125 + ((tmp_root->length_ + 1) / 20) * (-30), 230);
 
 										text.setString(question);
 
-									//	(tmp_root->get_prev())->set_right(tmp_root) = tmp_root;
-									//	(tmp_root->get_prev())->set_left((tmp_root->get_prev())->get_left());
-									//	tmp_root->set_prev(tmp_root);
 									}
 									else
 									{
 										FIND_WORD = true;
 										tmp_root->set_left(nullptr);
 										tmp_root->set_right(nullptr);
-										//tmp_root = tmp_root->get_left();
-										//strncpy(question, tmp_root->data_, tmp_root->length_);
-										//question[tmp_root->length_] = '\0';
-										//text.move(125, 0);
-										text.setPosition(155 + 125 + (3 / 20 - 1) * (-30), 230);
-										//text.move((static_cast<int>(3) - static_cast<int>(tmp_root->get_prev()->length_) + 1) / static_cast<int>(tmp_root->get_prev()->length_ + 1)  * (-15), 0);
-										//text.move((tmp_root->length_ - (tmp_root->get_prev()->length_)) * 20, 0);
-										text.setString("УРА");
+
+										text.setPosition(155 + 125 + (15 / 20 - 1) * (-30), 230);
+
+										text.setString("Спасибо за игру");
 
 										REGIME_1 = false;
-										//PLAY_AGAIN = true;
 									}
-
-									//printf("YES BUTTON\n");
 								}
 							}
 						}
-						//graphviz_dump();
 					}
 					else if (NEED_MENU)
 					{
-						//printf("in menu\n");
-						//printf("x = %d,  y = %d\n", x , y);
 						if ((100 <= x) && (x <= 100 + X_BUT_SIZE))
 						{
 							if ((340 <= y) && (y <= 340 + Y_BUT_SIZE))
 							{
-								//printf("REGIME_1\n");
 								NEED_MENU = false;
 								REGIME_1 = true;
 
-								//char* question = new char[tmp_root->length_];
 								strncpy(question, root_->data_, root_->length_);
 								question[root_->length_] = '?';
 								question[root_->length_ + 1] = '\0';
-								
-								//text.move(- static_cast<int>((strlen(question) - strlen("Выберите режим игры:")) * 15), 0);
-								//printf("prev length = %d\n"
-								//	"cur length = %d\n"
-								//	"delta = %d\n", strlen("Выберите режим игры:") , tmp_root->length_, tmp_root->length_ - strlen("Выберите режим игры:"));
-								//text.move( (tmp_root->length_ - strlen("Выберите режим игры:")), 0);
-								
-								text.setPosition(155 + 125 + (static_cast<int>(tmp_root->length_ + 1) / 20 - 1) * (-30), 230);
-								//text.move((static_cast<int>(tmp_root->length_ + 1) - 20) / 20 * (-15), 0);
-								//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+								text.setPosition(155 + 125 + ((tmp_root->length_ + 1) / 20 - 1) * (-30), 230);
+
 								text.setCharacterSize(30);
 								text.setString(question);
-								//printf("%s", question);
 							}
-							//WAIT_FOR_REGIME = false;
 						}
 						else if ((100 + X_BUT_SIZE + 50 <= x) && (x <= 100 + X_BUT_SIZE + 50 + X_BUT_SIZE))
 						{
@@ -456,17 +506,7 @@ void tree::graphic_play()
 							{
 								NEED_MENU = false;
 								REGIME_2 = true;
-
-								//char* question = new char[tmp_root->length_];
-								//strncpy(question, root_->data_, root_->length_);
-								//question[root_->length_] = '?';
-								//question[root_->length_ + 1] = '\0';
-
-
-								//text.setCharacterSize(30);
-								//text.setString(question);
 							}
-							//WAIT_FOR_REGIME = false;
 						}
 					}
 					if ((100 + X_BUT_SIZE + 50 <= x) && (x <= 100 + X_BUT_SIZE + 50 + X_BUT_SIZE))
@@ -479,10 +519,9 @@ void tree::graphic_play()
 			if (WAIT_WORD)
 				if (event.type == sf::Event::KeyPressed)
 				{
-					//printf("%d\n", static_cast<char>(event.text.unicode));
+					//printf("here\n\n");
 					if (static_cast<char>(event.text.unicode) == 58)
 					{
-						//printf("Enter \n");
 						WAIT_WORD = false;
 						WORD_DONE = true;
 						user_word[cur_size] = '\0';
@@ -534,15 +573,18 @@ void tree::graphic_play()
 						else if (event.key.code == Keyboard::Num7) user_word[cur_size++] = '7';
 						else if (event.key.code == Keyboard::Num8) user_word[cur_size++] = '8';
 						else if (event.key.code == Keyboard::Num9) user_word[cur_size++] = '9';
-						else if (event.key.code == Keyboard::Num0) user_word[cur_size++] = '0';						
+						else if (event.key.code == Keyboard::Num0) user_word[cur_size++] = '0';
 						else if (event.key.code == Keyboard::BackSpace) {
 							if (cur_size > 0)
 							{
 								user_word[cur_size--] = '\0';
 								user_text.move(+30, 0);
 							}
-							else printf("cur_size == 0\n");
-							
+							else
+							{
+								user_text.move(+15, 0);
+								printf("cur_size == 0\n");
+							}
 						}
 
 						user_word[cur_size] = '\0';
@@ -554,10 +596,8 @@ void tree::graphic_play()
 			if (NEED_QUESTION)
 				if (event.type == sf::Event::KeyPressed)
 				{
-					//printf("%d\n", static_cast<char>(event.text.unicode));
 					if (static_cast<char>(event.text.unicode) == 58)
 					{
-						//printf("Enter \n");
 						NEED_QUESTION = false;
 						QUESTION_DONE = true;
 						user_question[cur_size_q] = '\0';
@@ -616,7 +656,7 @@ void tree::graphic_play()
 								user_text.move(+30, 0);
 							}
 							else printf("cur_size_q == 0\n");
-							
+
 						}
 
 						user_question[cur_size_q] = '\0';
@@ -627,33 +667,24 @@ void tree::graphic_play()
 				}
 
 		}
-		// Установка цвета фона - белый
-		window.clear(Color::White);
 
+		//window.clear(Color::White);
 
-		// Отрисовка фона
 		window.draw(sprite);
-
-		// Отрисовка кнопки play
 		window.draw(rectangle);
 
-		/*printf("DRAW_BUTTON = %d\n"
-				"NEED_MENU = %d\n"
-				" FIND_WORD = %d\n"
-				" REGIME_1 = %d\n"
-				" WORD_DONE = %d\n", DRAW_BUTTON, NEED_MENU, FIND_WORD, REGIME_1, WORD_DONE);
-				*/
+
 		if (PLAY_AGAIN)
 		{
-			
 			window.draw(rectangle);
 			window.draw(text);
 		}
+		
 		if (DRAW_BUTTON)
 			window.draw(text);
+
 		else if (NEED_MENU)
 		{
-			//printf("NEEW_MENU\n");
 			window.draw(text);
 
 			window.draw(reg1_rect);
@@ -666,32 +697,23 @@ void tree::graphic_play()
 		else if (FIND_WORD && !WAIT_WORD)
 		{
 			window.draw(text);
-			//text.setString("Выберите режим игры:");
-			//PLAY_AGAIN = true;
 			window.draw(rectangle);
 			window.draw(text);
-
-			//DRAW_BUTTON = false;
-			//NEED_MENU = true;
 		}
 		else if (REGIME_1)
 		{
-			//printf("REGIME_1 yes_no\n");
 			window.draw(text);
-			//delete[] question;
 
 			window.draw(yes_rect);
 			window.draw(no_rect);
 
 			window.draw(yes_text);
 			window.draw(no_text);
-
 		}
 
 		if (WORD_DONE)
 		{
-			//printf(" word done\n");
-			printf("[%s]\n", user_word);
+			//printf("[%s]\n", user_word);
 			WORD_DONE = false;
 			NEED_QUESTION = true;
 			text.move(-100, 0);
@@ -700,19 +722,14 @@ void tree::graphic_play()
 		}
 		if (QUESTION_DONE)
 		{
-
-			printf("[%s]\n", user_question);
+			//printf("[%s]\n", user_question);
 			QUESTION_DONE = false;
 			NEED_UPDATE_BASE = true;
 			text.move(75, 0);
 			text.setString("Спасибо большое за игру!");
-			//NEED_MENU = true;
-			//tmp_root = root_;
 		}
-
 		if (NEED_QUESTION)
 		{
-			//printf("here\n");
 			window.draw(text);
 
 			window.draw(user_word_rect);
@@ -728,82 +745,55 @@ void tree::graphic_play()
 		{
 			show_tree();
 			REGIME_2 = false;
-			
+
 			NEED_MENU = true;
 			text.setString("Выберите режим игры:");
 		}
 
-		// EXIT BUTTON
 		window.draw(exit_rect);
 		window.draw(exit_but);
 
-
-		// Отрисовка окна
 		window.display();
 	}
-	
-	//printf("tmp_root = %p\n"	
-	//		"prev = %p\n", tmp_root, tmp_root->get_prev());
-	//delete tmp_root;
-
-	//printf("root_ = %p\n"
-	//		"left = %p\n,right = %p\n", root_, root_->get_left(), root_->get_right());
 
 	if (NEED_UPDATE_BASE)
 	{
-		//printf("aaa");
 		tree_element* user_element = new tree_element;
 		assert(user_element);
-		//printf("length = %d\n", strlen(user_word));
 		char* new_data = new char[strlen(user_word)];
 		strncpy(new_data, user_word, strlen(user_word));
-		//new_data[strlen(user_word)] = '\0';
-		//printf("strlen new data = %d\n", strlen(new_data));
-		//printf("strlen user_word = %d\n", strlen(user_word));
-		//printf("cur size = %d\n", cur_size);
+
 
 		user_element->data_ = new_data;
 		user_element->user_length_ = strlen(user_word);
 		user_element->length_ = user_element->user_length_;
-		//printf("user_elemen length = %d\n", user_element->length_);
-
-		//printf("Ваш предмет [%s]\n", new_data);
-
-		// USER WORD   -- TRUE   -- RIGHT RIGHT
-
-		//printf("\t\tА теперь какое-нибудь его свойство, которого нет в моем слове\n:");
 
 		tree_element* user_attribute = new tree_element;
 		assert(user_attribute);
 
-
-		//printf("length = %d\n", strlen(user_question));
-
 		char* new_question = new char[strlen(user_question)];
 		strncpy(new_question, user_question, strlen(user_question));
-		//new_question[strlen(user_question)] = '\0';
 
 
 		user_attribute->data_ = new_question;
 		user_attribute->user_length_ = strlen(user_question);
 		user_attribute->length_ = user_attribute->user_length_;
-		//printf("user_att length = %d\n", user_attribute->length_);
-		//printf("Ваш вопрос [%s]\n", new_question);
 
 
 		user_element->set_prev(user_attribute);
 
-		//ATTRIBUTE OF USER WORD
 
 		user_attribute->set_right(user_element);
 		user_attribute->set_left(tmp_root);
 
 		if ((tmp_root->get_prev())->get_right() == tmp_root)
 			(tmp_root->get_prev())->set_right(user_attribute);
+
 		else if ((tmp_root->get_prev())->get_left() == tmp_root)
 			(tmp_root->get_prev())->set_left(user_attribute);
+
 		else
-			printf("Something bad..");
+			printf("Something bad in line: %d", __LINE__);
 
 		user_attribute->set_prev(tmp_root->get_prev());
 		tmp_root->set_prev(user_attribute);
