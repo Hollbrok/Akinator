@@ -108,6 +108,7 @@ int get_number_of_game()
 	while (true)
 	{
 		printf("Введите цифру режима игры: ");
+
 		gets_s(user_data);
 		user_data[strlen(user_data)] = '\0';
 
@@ -133,14 +134,10 @@ int get_number_of_game()
 
 void print_hello()
 {
-	printf("\t\tПриветствую тебя.\nЧтобы сыграть можешь выбрать один в следующих режимов игры:\n");
-
-	printf("\t1. Угадать загаданный предмет/героя\n");
-	printf("\t2. Показать базу\n");
-
-
-	printf("\t5. Выйти\n");
-	printf("\n");
+	printf("\t\tПриветствую тебя.\nЧтобы сыграть можешь выбрать один в следующих режимов игры:\n"
+			"\t1. Угадать загаданный предмет/героя\n"
+			"\t2. Показать базу\n"
+			"\t5. Выйти\n\n");
 	return;
 }
 
@@ -150,11 +147,12 @@ void tree::play_1()
 
 	if (root_)
 	{
-		printf("Правила игры:\n");
-		printf("\t 1) Загадайте предмет\n");
-		printf("\t 2) Я буду угадывать его\n");
-		printf("\t 3) Если ваш да, то введите \"y\" \n");
-		printf("\t 4) Если нет, то \"n\" \n\n\n");
+		printf("Правила игры:\n"
+			"\t 1) Загадайте предмет\n"
+			"\t 2) Я буду угадывать его\n"
+			"\t 3) Если ваш да, то введите \"y\" \n"
+			"\t 4) Если нет, то \"n\" \n\n\n");
+
 		check_answer(root_);
 	}
 	else
@@ -183,8 +181,8 @@ void check_answer(tree_element* question)
 		{
 			tree_element* prev_question = question->get_prev();
 
-			printf("\t\tЖаль, что не удалось, но я\n\t\tпопробую угадать в следующий раз!\n");
-			printf("\t\tМожешь ввести имя загаданного предмета?\n:");
+			printf("\t\tЖаль, что не удалось, но я\n\t\tпопробую угадать в следующий раз!\n"
+					"\t\tМожешь ввести имя загаданного предмета?\n:");
 
 			tree_element* user_element = create_root(get_data_from_user(), nullptr, nullptr, nullptr);
 
@@ -196,10 +194,8 @@ void check_answer(tree_element* question)
 			
 			if (prev_question->get_right() == question)
 				prev_question->set_right(user_attribute);
-
 			else if (prev_question->get_left() == question)
 				prev_question->set_left(user_attribute);
-
 			else
 				printf("Something bad in line: %d", __LINE__);
 				
