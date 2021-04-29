@@ -73,18 +73,21 @@ void tree::play()
 		else
 			switch (number_of_game)
 			{
-			case 1:
-				play_1();
-				break;
-			case 2:
-				play_2();
-				break;
-			case 3:
-				break;
-
-			default:
-				printf("Not indentified number of regime\n");
-				break;
+				case 1:
+					play_1();
+					break;
+				case 2:
+					play_2();
+					break;
+				case 3:
+					play_3();
+					break;
+				case 4:
+					play_4();
+					break;
+				default:
+					printf("Not indentified number of regime\n");
+					break;
 			}
 	}
 
@@ -96,6 +99,11 @@ void tree::play()
 	printf("Done!\n");
 
 	return;
+}
+
+constexpr bool IsRussianChar1251(const char c)
+{
+	return (c >= 'А' && c <= 'я') || c == 'ё' || c == 'Ё';
 }
 
 int get_number_of_game()
@@ -112,7 +120,9 @@ int get_number_of_game()
 		gets_s(user_data);
 		user_data[strlen(user_data)] = '\0';
 
-		if (!isdigit(user_data[0]))
+		if (IsRussianChar1251(user_data[0]))
+			continue;
+		if (isalpha(user_data[0]))
 			continue;
 
 		if (strlen(user_data) != 1)
@@ -137,6 +147,8 @@ void print_hello()
 	printf("\t\tПриветствую тебя.\nЧтобы сыграть можешь выбрать один в следующих режимов игры:\n"
 			"\t1. Угадать загаданный предмет/героя\n"
 			"\t2. Показать базу\n"
+			"\t3. Характеристика предмета\n"
+			"\t4. Сравнение двух предметов\n"
 			"\t5. Выйти\n\n");
 	return;
 }
@@ -165,6 +177,239 @@ void tree::play_2()
 {
 	show_tree();
 	return;
+}
+
+void tree::play_3()
+{
+	printf("\t Введите имя предмета, чтобы посмотреть его свойства\n:");
+	char* user_object = get_data_from_user();
+	printf("Ваш предмет [%s], и он обладает следующими свойствами:\n", user_object);
+	
+	bool find_word = get_root()->find_word(user_object);
+
+	if (!find_word)
+		printf("1. Предмет обладает только одним признаком: ЕГО НЕТ В БАЗЕ\n");
+	else
+	{
+		//printf("here");
+		get_root()->get_attributes(user_object);
+	}
+	printf("\n");
+	delete[] user_object;
+	return;
+}
+
+void tree_element::get_attributes(char* word)
+{
+	static int counter = 1;
+	if (!strncmp(data_, word, length_))
+	{
+		//printf("ret0\n");
+		return;
+	}
+
+	if (get_left() != nullptr)
+	{
+		bool find_answer = get_left()->find_word(word);
+		if (find_answer)
+		{
+			printf("%d. не %.*s\n", counter++, length_, data_);
+			get_left()->get_attributes(word);
+		}
+		else if (get_right() != nullptr)
+		{
+			printf("%d. %.*s\n", counter++, length_, data_);
+			get_right()->get_attributes(word);
+		}
+	}
+
+
+	return;
+}
+
+
+void tree::play_4()
+{
+	printf("\t Введите имя первого предмета, чтобы сравнить его со вторым\n:");
+	char* user_object_1 = get_data_from_user();
+	
+	bool find_word_1 = get_root()->find_word(user_object_1);
+	
+	if (!find_word_1)
+	{
+		printf("Извините, но такого слова нет в базе\n");
+		return;
+	}
+
+	printf("\n\t Введите имя второго предмета\n:");
+	char* user_object_2 = get_data_from_user();
+
+	bool find_word_2 = get_root()->find_word(user_object_2);
+
+	if (!find_word_2)
+	{
+		printf("Извините, но такого слова нет в базе\n");
+		return;
+	}
+
+	printf("Начинаем сравнение..\n\n");
+	
+	bool* attributes_1 = new bool[20]{0};
+	bool* attributes_2 = new bool[20]{0};
+
+	int cur_size_1 = 0;
+	attributes_1 = get_root()->get_attributes_massive(user_object_1, cur_size_1, attributes_1);
+
+
+	int cur_size_2 = 0;
+	attributes_2 = get_root()->get_attributes_massive(user_object_2, cur_size_2, attributes_2);
+
+
+	get_root()->compare_attributes(attributes_1, cur_size_1, attributes_2, cur_size_2, user_object_1, user_object_2);
+
+
+	delete[] attributes_1;
+	delete[] attributes_2;
+	return;
+}
+
+void tree_element::compare_attributes(bool* attr1, int size1, bool* attr2, int size2, char* obj1, char* obj2)
+{
+	int min = size1 < size2 ? size1 : size2;
+
+	int counter = 1;
+
+	int i = 0;
+
+	if (min == 0) {}
+	else if (attr1[i] == attr2[i])
+	{
+		printf("Схожи тем, что :\n");
+		while (attr1[i] == attr2[i])
+		{
+			char* question = get_question_from_massive(attr1, i);
+			if (attr1[i++])
+				printf("%d. %s\n", counter++, question);
+			else printf("%d. НЕ %s\n", counter++, question);
+			delete[] question;
+		}
+	}
+	else
+		printf("\t НИЧЕГО общего найти не удалось\n\n");
+
+	if(i < size1)
+		printf("\n	В свою очередь [%s] имеет слудующие характеристики:\n", obj1);
+	counter = 0;
+
+	for (int last_attr = i; last_attr < size1; last_attr++)
+	{
+		char* question = get_question_from_massive(attr1, last_attr);
+		if (attr1[last_attr])
+			printf("%d. %s\n", counter++, question);
+		else printf("%d. НЕ %s\n", counter++, question);
+		delete[] question;
+	}
+
+	if(i < size2)
+		printf("\n	И на последок [%s] имеет такие свойства:\n", obj2);
+	counter = 0;
+	//printf("i = %d, size2 = %d\n", i, size2);
+	for (int last_attr = i; last_attr < size2; last_attr++)
+	{
+		//printf("last_attr = %d\n", last_attr);
+		char* question = get_question_from_massive(attr2, last_attr);
+		if (attr2[last_attr])
+			printf("%d. %s\n", counter++, question);
+		else printf("%d. НЕ %s\n", counter++, question);
+		delete[] question;
+	}
+
+	printf("\n\n");
+
+	return;
+}
+
+char* tree_element::get_question_from_massive(bool* attributes, int size)
+{
+	tree_element* start = this;
+
+	char* attribute = new char[100] {0};
+	
+	for (int i = 0; i < size; i++)
+	{
+		if (attributes[i] == true)
+			start = start->get_right();
+		else start = start->get_left();
+	}
+	
+	//printf("1\n");
+	strncpy(attribute, start->non_const_get_data(), start->length_);// attribute
+	//printf("2\n");
+	attribute[start->length_] = '\0';
+
+	return attribute;
+}
+
+bool* tree_element::get_attributes_massive(char* word, int& cur_size, bool* attributes)
+{
+	if (!strncmp(data_, word, length_))
+	{
+		return attributes;
+	}
+	if (get_left() != nullptr)
+	{
+		bool find_answer = get_left()->find_word(word);
+		
+		if (find_answer)
+		{
+			//printf("%d. не %.*s\n", counter++, length_, data_);
+			attributes[cur_size++] = 0;
+			//printf("cur_size++\n");
+			get_left()->get_attributes_massive(word, cur_size, attributes);
+		}
+		else if (get_right() != nullptr)
+		{
+			//printf("%d. %.*s\n", counter++, length_, data_);
+			attributes[cur_size++] = 1;
+			//printf("cur_size++. cur_size = %d\n", cur_size);
+			get_right()->get_attributes_massive(word, cur_size, attributes);
+		}
+	}
+	return attributes;
+}
+
+bool tree_element::find_word(char* word)
+{
+	//static int counter = 1;
+	if (!strncmp(data_, word, length_))
+	{
+		return true;
+	}
+
+	if (get_left() != nullptr)
+	{
+		if (get_left()->find_word(word))
+		{
+			return true;
+		}
+		else if (get_right() != nullptr)
+		{
+			if (get_right()->find_word(word))
+				return true;
+			else
+				return false;
+		}
+		else
+			return false;
+	}
+
+	if ((get_right() == nullptr) && (get_left() == nullptr))
+	{
+		return false;
+	}
+
+	//printf("return true\n");
+	return true;
 }
 
 void check_answer(tree_element* question)

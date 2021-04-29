@@ -22,5 +22,7 @@
 
 void graphic_play();
 
+constexpr bool IsRussianChar1251(const char c);
+
 
 #endif // AKINATOR_H_INCLUDED

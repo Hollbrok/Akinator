@@ -113,6 +113,16 @@ public:
     void print_elem(FILE* database);
 
     bool get_user_answer();
+
+	bool* get_attributes_massive(char* word, int &cur_size, bool* attributes);
+
+	void get_attributes(char* word);
+
+	bool find_word(char* word);
+
+	void compare_attributes(bool* attr1, int size1, bool* attr2, int size2, char* obj1, char* obj2);
+
+	char* get_question_from_massive(bool* attributes, int size);
 };
 
 class tree:tree_element
@@ -158,6 +168,10 @@ public:
 
     void play_1();
 	void play_2();
+	void play_3();
+	void play_4();
+
+
     void play();
 
 	void graphic_play();
